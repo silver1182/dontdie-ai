@@ -1138,3 +1138,102 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(108, 92, 231, 0.4);
 }
+
+/* WeChat Pay Modal Styles */
+.wechat-pay-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.wechat-pay-modal .modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(5px);
+}
+
+.wechat-modal-content {
+    position: relative;
+    background: var(--bg-card);
+    border-radius: 20px;
+    width: 90%;
+    max-width: 400px;
+    z-index: 10001;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    padding: 2rem;
+    text-align: center;
+}
+
+.wechat-modal-content .modal-header {
+    margin-bottom: 1.5rem;
+}
+
+.wechat-modal-content .modal-header h3 {
+    font-size: 1.5rem;
+    color: #07c160;
+    margin-bottom: 0.5rem;
+}
+
+.wechat-modal-content .modal-desc {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.wechat-qr-container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.wechat-qr {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    border-radius: 8px;
+}
+
+.qr-hint {
+    margin-top: 1rem;
+    color: #07c160;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.wechat-modal-content .modal-footer {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.wechat-modal-content .modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.wechat-modal-content .modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}

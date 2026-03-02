@@ -1,0 +1,22 @@
+{
+  "_comment": "茅台股票监控演示配置",
+  "stocks": [
+    {
+      "code": "600519",
+      "name": "贵州茅台",
+      "market": "a",
+      "cost": 1500.00,
+      "shares": 100,
+      "stopLoss": 5,
+      "stopGain": 15,
+      "notify": true
+    }
+  ],
+  "settings": {
+    "checkInterval": 300,
+    "alertCooldown": 1800,
+    "marketHoursOnly": false,
+    "reportTime": ["15:00"],
+    "notifyChannels": ["console"]
+  }
+}

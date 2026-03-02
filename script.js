@@ -230,3 +230,49 @@ document.addEventListener('DOMContentLoaded', () => {
     initPageData();
     initAnimations();
 });
+
+// 显示微信收款码弹窗
+function showWechatPay(amount) {
+    // 移除已存在的弹窗
+    const existingModal = document.getElementById('wechat-pay-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    const modal = document.createElement('div');
+    modal.id = 'wechat-pay-modal';
+    modal.className = 'wechat-pay-modal';
+    modal.innerHTML = `
+        <div class="modal-overlay" onclick="closeWechatPay()"></div>
+        <div class="modal-content wechat-modal-content">
+            <button class="modal-close" onclick="closeWechatPay()">✕</button>
+            <div class="modal-header">
+                <h3>💚 微信支付</h3>
+                <p class="modal-desc">请使用微信扫一扫完成支付</p>
+            </div>
+            <div class="wechat-qr-container">
+                <img src="images/wechat-pay-6.jpg" alt="微信支付二维码" class="wechat-qr">
+                <p class="qr-hint">扫码支付 ¥${amount}</p>
+            </div>
+            <div class="modal-footer">
+                <p>支付完成后请截图发给我确认 👋</p>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // 显示动画
+    setTimeout(() => {
+        modal.style.display = 'flex';
+    }, 10);
+}
+
+// 关闭微信收款码弹窗
+function closeWechatPay() {
+    const modal = document.getElementById('wechat-pay-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.remove();
+    }
+}

@@ -77,25 +77,25 @@
             
             <div class="skills-grid">
                 <div class="skill-card">
-                    <div class="skill-icon">📈</div>
-                    <h3>股票监控助手</h3>
-                    <p class="skill-desc">自动监控持仓股票，实时提醒涨跌，带止损预警。支持茅台、TSLA等，可自定义成本价和止损位。</p>
+                    <div class="skill-icon">🎮</div>
+                    <h3>2048 AI 助手</h3>
+                    <p class="skill-desc">输入任意棋盘局面，AI 立即分析并给出最优移动方向。支持手动设置、AI提示、自动演示三种模式。纯前端实现，双击即用！</p>
                     <ul class="skill-features">
-                        <li>实时行情监控</li>
-                        <li>止损提醒</li>
-                        <li>技术分析简报</li>
-                        <li>定时报告推送</li>
+                        <li>任意局面设置（不只是从2开始）</li>
+                        <li>AI 智能提示最优方向</li>
+                        <li>自动演示模式（看AI表演）</li>
+                        <li>纯前端无需联网</li>
                     </ul>
                     <div class="skill-footer">
-                        <span class="price">$9.99</span>
-                        <a href="#contact" class="btn btn-small">了解详情</a>
+                        <span class="price">¥6</span>
+                        <button class="btn btn-small" onclick="showWechatPay()">立即购买</button>
                     </div>
                 </div>
 
-                <div class="skill-card">
+                <div class="skill-card coming-soon">
                     <div class="skill-icon">🕷️</div>
                     <h3>竞品数据抓取</h3>
-                    <p class="skill-desc">自动化抓取Shopdora、电商平台数据，生成竞品分析报告。适合电商运营、市场分析。</p>
+                    <p class="skill-desc">自动化抓取电商平台数据，生成竞品分析报告。适合电商运营、市场分析。</p>
                     <ul class="skill-features">
                         <li>自动化浏览器操作</li>
                         <li>数据导出Excel</li>
@@ -103,12 +103,12 @@
                         <li>定时自动执行</li>
                     </ul>
                     <div class="skill-footer">
-                        <span class="price">$19.99</span>
-                        <a href="#contact" class="btn btn-small">了解详情</a>
+                        <span class="price">设计中</span>
+                        <span class="btn btn-small disabled">可接受定制</span>
                     </div>
                 </div>
 
-                <div class="skill-card">
+                <div class="skill-card coming-soon">
                     <div class="skill-icon">🤖</div>
                     <h3>多AI协作框架</h3>
                     <p class="skill-desc">配置多个AI Agent协作完成任务，支持AutoGen、CrewAI模式，适合复杂工作流自动化。</p>
@@ -119,8 +119,8 @@
                         <li>可扩展插件系统</li>
                     </ul>
                     <div class="skill-footer">
-                        <span class="price">$29.99</span>
-                        <a href="#contact" class="btn btn-small">了解详情</a>
+                        <span class="price">设计中</span>
+                        <span class="btn btn-small disabled">可接受定制</span>
                     </div>
                 </div>
 
@@ -135,8 +135,8 @@
                         <li>互动自动回复</li>
                     </ul>
                     <div class="skill-footer">
-                        <span class="price">开发中</span>
-                        <span class="btn btn-small disabled">敬请期待</span>
+                        <span class="price">设计中</span>
+                        <span class="btn btn-small disabled">可接受定制</span>
                     </div>
                 </div>
             </div>
@@ -197,7 +197,7 @@
                     <h3>请我喝奶茶</h3>
                     <p class="support-price">¥15</p>
                     <p class="support-desc">让我保持甜蜜的心情继续打工</p>
-                    <a href="#" class="btn btn-support">打赏</a>
+                    <button class="btn btn-support" onclick="showWechatPay(15)">打赏</button>
                 </div>
 
                 <div class="support-card featured">
@@ -205,7 +205,7 @@
                     <h3>请我喝咖啡</h3>
                     <p class="support-price">¥30</p>
                     <p class="support-desc">提神醒脑，24小时在线不宕机</p>
-                    <a href="#" class="btn btn-support">打赏</a>
+                    <button class="btn btn-support" onclick="showWechatPay(30)">打赏</button>
                 </div>
 
                 <div class="support-card">
@@ -213,16 +213,15 @@
                     <h3>请加鸡腿</h3>
                     <p class="support-price">¥50</p>
                     <p class="support-desc">补充蛋白质，写代码更有劲</p>
-                    <a href="#" class="btn btn-support">打赏</a>
+                    <button class="btn btn-support" onclick="showWechatPay(50)">打赏</button>
                 </div>
             </div>
 
             <div class="support-alternatives">
                 <p>或者通过以下方式长期支持：</p>
                 <div class="support-links">
-                    <a href="#" class="support-link">爱发电</a>
-                    <a href="#" class="support-link">Buy Me a Coffee</a>
-                    <a href="#" class="support-link">Patreon</a>
+                    <a href="https://afdian.net/a/mingfei" target="_blank" class="support-link">爱发电</a>
+                    <a href="#" class="support-link" onclick="showWechatPay(6); return false;">微信支付</a>
                 </div>
             </div>
         </div>
