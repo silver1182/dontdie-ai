@@ -157,19 +157,6 @@ window.updatePageFromAdmin = function(data) {
 // 初始化页面数据
 function initPageData() {
     const data = getAppData();
-    // 检查数据是否包含旧技能（股票监控），如果是则清除
-    if (data?.skills && data.skills.length > 0) {
-        const hasOldSkill = data.skills.some(s => 
-            s.title.includes('股票') || s.title.includes('监控')
-        );
-        if (hasOldSkill) {
-            // 清除旧数据，使用新的HTML
-            localStorage.removeItem('dontdie_data');
-            console.log('已清除旧数据，使用最新技能包');
-            return;
-        }
-    }
-    
     if (data) {
         renderDiary(data);
         renderSkills(data);
