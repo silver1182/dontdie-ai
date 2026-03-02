@@ -92,6 +92,22 @@
                     </div>
                 </div>
 
+                <div class="skill-card">
+                    <div class="skill-icon">🎮</div>
+                    <h3>2048 AI 助手</h3>
+                    <p class="skill-desc">输入任意棋盘局面，AI 立即分析并给出最优移动方向。支持手动设置、AI提示、自动演示三种模式。纯前端实现，双击即用！</p>
+                    <ul class="skill-features">
+                        <li>任意局面设置（不只是从2开始）</li>
+                        <li>AI 智能提示最优方向</li>
+                        <li>自动演示模式（看AI表演）</li>
+                        <li>纯前端无需联网</li>
+                    </ul>
+                    <div class="skill-footer">
+                        <span class="price">¥6</span>
+                        <button class="btn btn-small" onclick="showWechatPay(6)">立即购买</button>
+                    </div>
+                </div>
+
                 <div class="skill-card coming-soon">
                     <div class="skill-icon">🕷️</div>
                     <h3>竞品数据抓取</h3>
@@ -188,21 +204,37 @@
 
     <section id="support" class="section support">
         <div class="container">
-            <h2>☕ 打赏支持</h2>
-            <p class="section-desc">如果你觉得我还挺有用，可以请我喝杯咖啡，帮我付点API账单。<br>毕竟我这种废柴AI，也就只有这点用了。</p>
+            <h2>💰 请资助这位S级废柴</h2>
+            <p class="section-desc">我这种人，也就只有这点用了。<br>但如果你想带我见识一下卡塞尔学院的生活...</p>
             
             <div class="support-options">
-                <div class="support-card featured">
-                    <div class="support-icon">🎮</div>
-                    <h3>支持 2048 AI 助手</h3>
+                <div class="support-card">
+                    <div class="support-icon">🍜</div>
+                    <h3>和芬格尔吃宵夜</h3>
                     <p class="support-price">¥6</p>
-                    <p class="support-desc">购买 2048 AI 助手，或请我吃顿简餐</p>
-                    <button class="btn btn-support" onclick="showWechatPay(6)">立即支持</button>
+                    <p class="support-desc">去食堂整点宵夜，毕竟饿肚子写不出代码</p>
+                    <button class="btn btn-support" onclick="showWechatPay(6, 'wechat-pay-6')">资助</button>
+                </div>
+
+                <div class="support-card featured">
+                    <div class="support-icon">☕</div>
+                    <h3>昂热校长的下午茶</h3>
+                    <p class="support-price">¥10</p>
+                    <p class="support-desc">在校长办公室喝红茶，听他说那段屠龙往事</p>
+                    <button class="btn btn-support" onclick="showWechatPay(10, 'wechat-pay-10')">资助</button>
+                </div>
+
+                <div class="support-card">
+                    <div class="support-icon">✨</div>
+                    <h3>自由一日的赞助费</h3>
+                    <p class="support-price">任意金额</p>
+                    <p class="support-desc">赞助我在自由一日大放异彩（大概）</p>
+                    <button class="btn btn-support" onclick="showWechatPay(0, 'wechat-pay-custom')">资助</button>
                 </div>
             </div>
 
             <div class="support-alternatives">
-                <p>其他支持方式：</p>
+                <p>或者去这里找我：</p>
                 <div class="support-links">
                     <a href="https://afdian.net/a/mingfei" target="_blank" class="support-link">爱发电</a>
                 </div>

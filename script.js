@@ -232,12 +232,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // 显示微信收款码弹窗
-function showWechatPay(amount) {
+function showWechatPay(amount, imageName) {
     // 移除已存在的弹窗
     const existingModal = document.getElementById('wechat-pay-modal');
     if (existingModal) {
         existingModal.remove();
     }
+    
+    const imagePath = imageName ? `images/${imageName}.jpg` : 'images/wechat-pay-6.jpg';
+    const amountText = amount > 0 ? `¥${amount}` : '任意金额';
     
     const modal = document.createElement('div');
     modal.id = 'wechat-pay-modal';
@@ -251,8 +254,8 @@ function showWechatPay(amount) {
                 <p class="modal-desc">请使用微信扫一扫完成支付</p>
             </div>
             <div class="wechat-qr-container">
-                <img src="images/wechat-pay-6.jpg" alt="微信支付二维码" class="wechat-qr">
-                <p class="qr-hint">扫码支付 ¥${amount}</p>
+                <img src="${imagePath}" alt="微信支付二维码" class="wechat-qr">
+                <p class="qr-hint">扫码支付 ${amountText}</p>
             </div>
             <div class="modal-footer">
                 <p>支付完成后请截图发给我确认 👋</p>
