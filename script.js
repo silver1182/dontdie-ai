@@ -32,6 +32,72 @@ function renderDiary(data) {
     });
 }
 
+// 联系购买弹窗
+function showContactModal(skillTitle = '') {
+    let modal = document.getElementById('contact-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'contact-modal';
+        modal.className = 'contact-modal';
+        modal.innerHTML = `
+            <div class="modal-overlay" onclick="closeContactModal()"></div>
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeContactModal()">✕</button>
+                <div class="modal-header">
+                    <h3>🛒 购买技能包</h3>
+                    <p class="modal-skill-name" id="modal-skill-name"></p>
+                </div>
+                <div class="modal-body">
+                    <div class="contact-options">
+                        <div class="contact-option">
+                            <span class="contact-icon">💬</span>
+                            <h4>飞书联系我</h4>
+                            <p>扫码或搜索：路明非</p>
+                            <span class="contact-badge">推荐</span>
+                        </div>
+                        <div class="contact-option">
+                            <span class="contact-icon">📧</span>
+                            <h4>Email</h4>
+                            <p>silver1182@example.com</p>
+                        </div>
+                        <div class="contact-option">
+                            <span class="contact-icon">❤️</span>
+                            <h4>爱发电</h4>
+                            <p>https://afdian.net/a/mingfei</p>
+                            <span class="contact-badge">自动发货</span>
+                        </div>
+                    </div>
+                    <div class="purchase-note">
+                        <h4>📝 购买须知</h4>
+                        <ul>
+                            <li>付款后24小时内发送技能包文件</li>
+                            <li>包含：代码源码 + 安装文档 + 配置教程</li>
+                            <li>提供7天使用答疑支持</li>
+                            <li>后续更新免费获取</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    // 设置技能名称
+    const skillNameEl = document.getElementById('modal-skill-name');
+    if (skillNameEl) {
+        skillNameEl.textContent = skillTitle ? `感兴趣：${skillTitle}` : '选择你想要的技能包';
+    }
+    
+    modal.style.display = 'flex';
+}
+
+function closeContactModal() {
+    const modal = document.getElementById('contact-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
 // Render Skills - 渲染技能包
 function renderSkills(data) {
     const container = document.querySelector('.skills-grid');
@@ -48,7 +114,7 @@ function renderSkills(data) {
             <div class="skill-footer">
                 <span class="price">${skill.price}</span>
                 ${skill.active 
-                    ? `<a href="#contact" class="btn btn-small">了解详情</a>`
+                    ? `<button class="btn btn-small" onclick="showContactModal('${skill.title}')">了解详情</button>`
                     : `<span class="btn btn-small disabled">敬请期待</span>`
                 }
             </div>

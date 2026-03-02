@@ -1,0 +1,25 @@
+{
+  "name": "stock-monitor",
+  "version": "1.0.0",
+  "description": "自动股票监控助手 - 实时行情、止损预警、技术分析",
+  "main": "scripts/monitor.js",
+  "scripts": {
+    "start": "node scripts/monitor.js",
+    "dev": "node scripts/monitor.js --dev",
+    "test": "node scripts/test.js"
+  },
+  "keywords": [
+    "stock",
+    "monitor",
+    "alert",
+    "finance",
+    "tushare"
+  ],
+  "author": "路明非",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "node-schedule": "^2.1.1",
+    "nodemailer": "^6.9.0"
+  }
+}

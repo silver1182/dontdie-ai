@@ -1,0 +1,51 @@
+{
+  "_comment": "股票监控配置文件 - 复制为 stocks.json 后修改",
+  "stocks": [
+    {
+      "code": "600519",
+      "name": "茅台",
+      "market": "a",
+      "cost": 1500.00,
+      "shares": 100,
+      "stopLoss": 5,
+      "stopGain": 15,
+      "notify": true
+    },
+    {
+      "code": "00700",
+      "name": "腾讯",
+      "market": "hk",
+      "cost": 350.00,
+      "shares": 200,
+      "stopLoss": 8,
+      "stopGain": 20,
+      "notify": true
+    },
+    {
+      "code": "TSLA",
+      "name": "特斯拉",
+      "market": "us",
+      "cost": 200.00,
+      "shares": 50,
+      "stopLoss": 10,
+      "notify": false
+    }
+  ],
+  "settings": {
+    "checkInterval": 300,
+    "alertCooldown": 1800,
+    "marketHoursOnly": true,
+    "reportTime": ["09:30", "15:00", "21:00"],
+    "notifyChannels": ["feishu"],
+    "feishu": {
+      "webhook": "${FEISHU_WEBHOOK}"
+    },
+    "email": {
+      "smtp": "smtp.gmail.com",
+      "port": 587,
+      "user": "${EMAIL_USER}",
+      "pass": "${EMAIL_PASS}",
+      "to": "${EMAIL_TO}"
+    }
+  }
+}
