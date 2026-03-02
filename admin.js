@@ -120,7 +120,6 @@
 
     function logout() {
         sessionStorage.removeItem('admin_logged_in');
-        hideAdminPanel();
     }
 
     // 创建后台面板HTML
@@ -128,11 +127,11 @@
         const panel = document.createElement('div');
         panel.id = 'admin-panel';
         panel.innerHTML = `
-            <div class="admin-overlay" onclick="if(event.target===this)window.admin.logout()"></div>
+            <div class="admin-overlay"></div>
             <div class="admin-container">
                 <div class="admin-header">
                     <h2>🎛️ 后台管理</h2>
-                    <button class="admin-close" onclick="window.admin.logout()">✕</button>
+                    <button class="admin-close">✕</button>
                 </div>
                 <div class="admin-tabs">
                     <button class="admin-tab active" data-tab="diary">日记管理</button>
@@ -431,12 +430,24 @@
                 this.bindTabs();
             }
             panel.style.display = 'flex';
+            
+            // 绑定关闭事件
+            const closeBtn = panel.querySelector('.admin-close');
+            const overlay = panel.querySelector('.admin-overlay');
+            
+            if (closeBtn) {
+                closeBtn.onclick = () => this.logout();
+            }
+            if (overlay) {
+                overlay.onclick = () => this.logout();
+            }
+            
             this.renderAll();
         },
 
         // 隐藏后台面板
         logout() {
-            logout();
+            sessionStorage.removeItem('admin_logged_in');
             const panel = document.getElementById('admin-panel');
             if (panel) panel.style.display = 'none';
             location.hash = '';
