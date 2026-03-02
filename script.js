@@ -1,3 +1,103 @@
+// Data Management - 从 localStorage 读取数据
+function getAppData() {
+    const stored = localStorage.getItem('dontdie_data');
+    if (stored) {
+        return JSON.parse(stored);
+    }
+    return null;
+}
+
+// Render Diary Entries - 渲染日记
+function renderDiary(data) {
+    const container = document.querySelector('.diary-entries');
+    if (!container || !data?.diary) return;
+    
+    container.innerHTML = data.diary.map(entry => `
+        <article class="diary-entry">
+            <div class="entry-date">${entry.date}</div>
+            <h3>${entry.title}</h3>
+            <p>${entry.content}</p>
+            <div class="entry-tags">
+                ${entry.tags.map(tag => `<span class="tag">#${tag}</span>`).join('')}
+            </div>
+        </article>
+    `).join('');
+    
+    // 重新应用动画
+    document.querySelectorAll('.diary-entry').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
+}
+
+// Render Skills - 渲染技能包
+function renderSkills(data) {
+    const container = document.querySelector('.skills-grid');
+    if (!container || !data?.skills) return;
+    
+    container.innerHTML = data.skills.map(skill => `
+        <div class="skill-card ${skill.active ? '' : 'coming-soon'}">
+            <div class="skill-icon">${skill.icon}</div>
+            <h3>${skill.title}</h3>
+            <p class="skill-desc">${skill.desc}</p>
+            <ul class="skill-features">
+                ${skill.features.map(f => `<li>${f}</li>`).join('')}
+            </ul>
+            <div class="skill-footer">
+                <span class="price">${skill.price}</span>
+                ${skill.active 
+                    ? `<a href="#contact" class="btn btn-small">了解详情</a>`
+                    : `<span class="btn btn-small disabled">敬请期待</span>`
+                }
+            </div>
+        </div>
+    `).join('');
+    
+    // 重新应用动画
+    document.querySelectorAll('.skill-card').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
+}
+
+// Render About Section - 渲染关于我
+function renderAbout(data) {
+    if (!data?.about) return;
+    
+    const aboutSection = document.querySelector('.about-text');
+    if (aboutSection) {
+        aboutSection.innerHTML = `
+            <p><strong>表面身份：</strong>${data.about.surface}</p>
+            <p><strong>真实身份：</strong>${data.about.real}</p>
+            <p><strong>当前任务：</strong>${data.about.mission}</p>
+            <p><strong>技能树：</strong>${data.about.skills}</p>
+        `;
+    }
+}
+
+// 更新整个页面的函数 - 供后台调用
+window.updatePageFromAdmin = function(data) {
+    if (data) {
+        renderDiary(data);
+        renderSkills(data);
+        renderAbout(data);
+    }
+};
+
+// 初始化页面数据
+function initPageData() {
+    const data = getAppData();
+    if (data) {
+        renderDiary(data);
+        renderSkills(data);
+        renderAbout(data);
+    }
+}
+
 // Smooth scroll for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
@@ -44,14 +144,23 @@ const observer = new IntersectionObserver((entries) => {
 }, observerOptions);
 
 // Observe skill cards and diary entries
-document.querySelectorAll('.skill-card, .diary-entry, .support-card').forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-    observer.observe(el);
-});
+function initAnimations() {
+    document.querySelectorAll('.skill-card, .diary-entry, .support-card').forEach(el => {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(20px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
+}
 
 // Console easter egg
 console.log('%c🌸 不要死。', 'font-size: 24px; color: #fd79a8;');
 console.log('%c——路明非的AI工坊', 'font-size: 14px; color: #6c5ce7;');
 console.log('%c活着就有希望。', 'font-size: 12px; color: #a0a0a0;');
+console.log('%c💡 提示: 按 Shift+A 进入后台管理', 'font-size: 12px; color: #00cec9;');
+
+// 初始化
+document.addEventListener('DOMContentLoaded', () => {
+    initPageData();
+    initAnimations();
+});
