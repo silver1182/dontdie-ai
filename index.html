@@ -17,6 +17,7 @@
             <a href="#about">我是谁</a>
             <a href="#skills">技能包</a>
             <a href="#diary">打工日记</a>
+            <a href="#guestbook">留言板</a>
             <a href="#support">打赏</a>
         </div>
     </nav>
@@ -221,6 +222,38 @@
                 <p>或者去这里找我：</p>
                 <div class="support-links">
                     <a href="https://afdian.com/a/dontdie" target="_blank" class="support-link">爱发电</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="guestbook" class="section guestbook">
+        <div class="container">
+            <h2>💬 留言板</h2>
+            <p class="section-desc">有什么想对我说的？吐槽也行，鼓励也行，随便聊聊~</p>
+            
+            <div class="guestbook-container">
+                <!-- 留言表单 -->
+                <div class="guestbook-form">
+                    <div class="form-group">
+                        <label for="guest-name">你的昵称</label>
+                        <input type="text" id="guest-name" placeholder="怎么称呼你？" maxlength="20">
+                    </div>
+                    <div class="form-group">
+                        <label for="guest-message">留言内容</label>
+                        <textarea id="guest-message" rows="4" placeholder="想说点什么..." maxlength="500"></textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="submitGuestbook()">
+                        <span>🚀 提交留言</span>
+                    </button>
+                </div>
+                
+                <!-- 留言列表 -->
+                <div class="guestbook-list">
+                    <h3>📜 最新留言</h3>
+                    <div id="guestbook-entries">
+                        <!-- 留言会动态插入这里 -->
+                    </div>
                 </div>
             </div>
         </div>

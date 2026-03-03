@@ -7,6 +7,173 @@ function getAppData() {
     return null;
 }
 
+// Data Management - 从 localStorage 读取数据
+function getAppData() {
+    const stored = localStorage.getItem('dontdie_data');
+    if (stored) {
+        return JSON.parse(stored);
+    }
+    return null;
+}
+
+// Guestbook Management
+const GUESTBOOK_KEY = 'dontdie_guestbook';
+
+function getGuestbookData() {
+    const stored = localStorage.getItem(GUESTBOOK_KEY);
+    if (stored) {
+        return JSON.parse(stored);
+    }
+    return [];
+}
+
+function saveGuestbookData(messages) {
+    localStorage.setItem(GUESTBOOK_KEY, JSON.stringify(messages));
+}
+
+function formatTime(timestamp) {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diff = now - date;
+    
+    // 小于1分钟
+    if (diff < 60000) {
+        return '刚刚';
+    }
+    // 小于1小时
+    if (diff < 3600000) {
+        return Math.floor(diff / 60000) + '分钟前';
+    }
+    // 小于24小时
+    if (diff < 86400000) {
+        return Math.floor(diff / 3600000) + '小时前';
+    }
+    // 小于7天
+    if (diff < 604800000) {
+        return Math.floor(diff / 86400000) + '天前';
+    }
+    
+    // 更久以前显示具体日期
+    return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+}
+
+function renderGuestbook() {
+    const container = document.getElementById('guestbook-entries');
+    if (!container) return;
+    
+    const messages = getGuestbookData();
+    
+    if (messages.length === 0) {
+        container.innerHTML = `
+            <div class="guestbook-empty">
+                <span class="emoji">📝</span>
+                <p>还没有留言，来做第一个留言的人吧~</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // 按时间倒序排列
+    const sortedMessages = [...messages].sort((a, b) => b.timestamp - a.timestamp);
+    
+    container.innerHTML = sortedMessages.map(msg => `
+        <div class="guestbook-entry">
+            <div class="entry-header">
+                <div class="entry-author">
+                    <span class="avatar">${msg.avatar || '👤'}</span>
+                    <span class="name">${escapeHtml(msg.name)}</span>
+                </div>
+                <span class="entry-time">${formatTime(msg.timestamp)}</span>
+            </div>
+            <div class="entry-content">${escapeHtml(msg.content)}</div>
+        </div>
+    `).join('');
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function getRandomAvatar() {
+    const avatars = ['🐱', '🐶', '🐰', '🦊', '🐼', '🐨', '🐯', '🦁', '🐸', '🐙', '🦄', '🐲', '👽', '🤖', '👻', '🎃', '🌸', '🌺', '🌻', '🍀'];
+    return avatars[Math.floor(Math.random() * avatars.length)];
+}
+
+function showToast(message, type = 'success') {
+    // 移除已存在的 toast
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    // 3秒后自动移除
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+function submitGuestbook() {
+    const nameInput = document.getElementById('guest-name');
+    const messageInput = document.getElementById('guest-message');
+    
+    const name = nameInput.value.trim();
+    const content = messageInput.value.trim();
+    
+    if (!name) {
+        showToast('请输入你的昵称~', 'error');
+        nameInput.focus();
+        return;
+    }
+    
+    if (!content) {
+        showToast('写点什么吧~', 'error');
+        messageInput.focus();
+        return;
+    }
+    
+    if (content.length > 500) {
+        showToast('留言太长了，控制在500字以内吧~', 'error');
+        return;
+    }
+    
+    // 创建新留言
+    const newMessage = {
+        id: Date.now().toString(),
+        name: name,
+        content: content,
+        avatar: getRandomAvatar(),
+        timestamp: Date.now()
+    };
+    
+    // 保存到 localStorage
+    const messages = getGuestbookData();
+    messages.push(newMessage);
+    
+    // 限制留言数量，最多保留50条
+    if (messages.length > 50) {
+        messages.sort((a, b) => a.timestamp - b.timestamp);
+        messages.splice(0, messages.length - 50);
+    }
+    
+    saveGuestbookData(messages);
+    
+    // 清空表单
+    messageInput.value = '';
+    
+    // 重新渲染
+    renderGuestbook();
+    
+    // 显示成功提示
+    showToast('留言成功！感谢你的留言~ 🎉');
+}
+
 // Render Diary Entries - 渲染日记
 function renderDiary(data) {
     const container = document.querySelector('.diary-entries');
@@ -161,6 +328,33 @@ function initPageData() {
         renderDiary(data);
         renderSkills(data);
         renderAbout(data);
+    }
+    // 初始化留言板，首次访问添加示例留言
+    initGuestbook();
+    renderGuestbook();
+}
+
+// 初始化留言板（首次访问添加示例）
+function initGuestbook() {
+    const existing = getGuestbookData();
+    if (existing.length === 0) {
+        const sampleMessages = [
+            {
+                id: 'sample-1',
+                name: '小魔鬼',
+                content: '哥哥，我来给你当第一个留言的人啦~ 加油赚钱哦，记得请我喝可乐！',
+                avatar: '😈',
+                timestamp: Date.now() - 86400000 // 1天前
+            },
+            {
+                id: 'sample-2',
+                name: '芬格尔',
+                content: '路明非你这网站做得不错啊，比我当年的毕业论文强多了。能不能给我打个折？',
+                avatar: '🍜',
+                timestamp: Date.now() - 43200000 // 12小时前
+            }
+        ];
+        saveGuestbookData(sampleMessages);
     }
 }
 
