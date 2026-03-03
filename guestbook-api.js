@@ -1,35 +1,23 @@
 // guestbook-api.js - 前端 API 调用模块
-// 配合 Cloudflare Workers 后端使用
+// 后端地址：Cloudflare Workers
 
-// ============================================
-// 配置 - 部署后把这里改成你的 Workers 地址
-// ============================================
-const API_BASE_URL = 'https://your-worker.your-subdomain.workers.dev';
-// const API_BASE_URL = 'http://localhost:8787'; // 本地测试用
-
-// ============================================
-// API 调用函数
-// ============================================
+const API_BASE_URL = 'https://dontdie-guestbook.2463317640.workers.dev';
 
 // 获取留言列表
 async function fetchMessages() {
   try {
-    showLoading();
     const response = await fetch(`${API_BASE_URL}/api/messages`);
     const data = await response.json();
     
     if (data.success) {
       renderGuestbookList(data.messages);
     } else {
-      showToast('获取留言失败：' + (data.error || '未知错误'), 'error');
+      showToast('获取留言失败', 'error');
     }
   } catch (error) {
     console.error('Fetch error:', error);
-    showToast('网络错误，请稍后重试', 'error');
-    // 降级到本地存储（可选）
+    showToast('网络错误，使用本地存储', 'error');
     renderGuestbookFromLocal();
-  } finally {
-    hideLoading();
   }
 }
 
@@ -48,7 +36,6 @@ async function submitMessageToAPI(name, content) {
     
     if (data.success) {
       showToast('留言成功！感谢你的留言~ 🎉');
-      // 刷新列表
       fetchMessages();
       return true;
     } else {
@@ -62,10 +49,47 @@ async function submitMessageToAPI(name, content) {
   }
 }
 
-// ============================================
-// 渲染函数（兼容现有样式）
-// ============================================
+// 提交表单处理
+async function submitGuestbookAPI() {
+  const nameInput = document.getElementById('guest-name');
+  const messageInput = document.getElementById('guest-message');
+  
+  const name = nameInput.value.trim();
+  const content = messageInput.value.trim();
+  
+  if (!name) {
+    showToast('请输入你的昵称~', 'error');
+    nameInput.focus();
+    return;
+  }
+  
+  if (!content) {
+    showToast('写点什么吧~', 'error');
+    messageInput.focus();
+    return;
+  }
+  
+  if (content.length > 500) {
+    showToast('留言太长了，控制在500字以内吧~', 'error');
+    return;
+  }
+  
+  const btn = document.querySelector('.guestbook-form button');
+  const originalText = btn.innerHTML;
+  btn.innerHTML = '<span>发送中...</span>';
+  btn.disabled = true;
+  
+  const success = await submitMessageToAPI(name, content);
+  
+  btn.innerHTML = originalText;
+  btn.disabled = false;
+  
+  if (success) {
+    messageInput.value = '';
+  }
+}
 
+// 渲染留言列表
 function renderGuestbookList(messages) {
   const container = document.getElementById('guestbook-entries');
   if (!container) return;
@@ -94,63 +118,19 @@ function renderGuestbookList(messages) {
   `).join('');
 }
 
-// 降级方案：从 localStorage 读取（可选）
+// 降级到本地存储
 function renderGuestbookFromLocal() {
-  const messages = getGuestbookData(); // 复用原来的 localStorage 函数
+  const messages = getGuestbookData();
   renderGuestbookList(messages);
 }
 
-// ============================================
-// 表单处理
-// ============================================
-
-async function submitGuestbookAPI() {
-  const nameInput = document.getElementById('guest-name');
-  const messageInput = document.getElementById('guest-message');
-  
-  const name = nameInput.value.trim();
-  const content = messageInput.value.trim();
-  
-  if (!name) {
-    showToast('请输入你的昵称~', 'error');
-    nameInput.focus();
-    return;
-  }
-  
-  if (!content) {
-    showToast('写点什么吧~', 'error');
-    messageInput.focus();
-    return;
-  }
-  
-  if (content.length > 500) {
-    showToast('留言太长了，控制在500字以内吧~', 'error');
-    return;
-  }
-  
-  // 显示加载状态
-  const btn = document.querySelector('.guestbook-form button');
-  const originalText = btn.innerHTML;
-  btn.innerHTML = '<span>发送中...</span>';
-  btn.disabled = true;
-  
-  // 提交到 API
-  const success = await submitMessageToAPI(name, content);
-  
-  // 恢复按钮
-  btn.innerHTML = originalText;
-  btn.disabled = false;
-  
-  if (success) {
-    // 清空留言内容（保留昵称）
-    messageInput.value = '';
-  }
+// 初始化
+function initGuestbookAPI() {
+  fetchMessages();
+  setInterval(fetchMessages, 30000); // 每30秒自动刷新
 }
 
-// ============================================
-// 工具函数（复用原来的）
-// ============================================
-
+// 工具函数
 function formatTime(timestamp) {
   const date = new Date(timestamp);
   const now = new Date();
@@ -170,41 +150,6 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-function showToast(message, type = 'success') {
-  const existingToast = document.querySelector('.toast');
-  if (existingToast) existingToast.remove();
-  
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  
-  setTimeout(() => toast.remove(), 3000);
-}
-
-function showLoading() {
-  const container = document.getElementById('guestbook-entries');
-  if (container) {
-    container.innerHTML = '<div class="guestbook-loading">加载中...</div>';
-  }
-}
-
-function hideLoading() {
-  // 内容由 renderGuestbookList 填充
-}
-
-// ============================================
-// 初始化
-// ============================================
-
-function initGuestbookAPI() {
-  // 页面加载时获取留言
-  fetchMessages();
-  
-  // 每30秒自动刷新（可选）
-  setInterval(fetchMessages, 30000);
-}
-
-// 导出给 HTML 调用
+// 导出
 window.submitGuestbookAPI = submitGuestbookAPI;
 window.initGuestbookAPI = initGuestbookAPI;
