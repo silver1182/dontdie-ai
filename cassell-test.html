@@ -347,28 +347,91 @@
             font-size: 0.9rem;
         }
         
+        .quote-author {
+            margin-top: 0.5rem;
+            color: #6c5ce7;
+            font-size: 0.9rem;
+        }
+        
+        /* 分享区域 */
         .share-section {
             text-align: center;
             margin-top: 2rem;
         }
         
+        .share-title {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .share-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
         .share-btn {
-            display: inline-block;
-            padding: 1rem 2rem;
-            background: linear-gradient(135deg, #00cec9, #0984e3);
-            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
             border: none;
-            border-radius: 50px;
-            font-size: 1rem;
+            border-radius: 25px;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            margin: 0 0.5rem;
         }
         
         .share-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0, 206, 201, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .share-wechat {
+            background: linear-gradient(135deg, #07c160, #00b157);
+            color: white;
+        }
+        
+        .share-qq {
+            background: linear-gradient(135deg, #12b7f5, #0099ff);
+            color: white;
+        }
+        
+        .share-weibo {
+            background: linear-gradient(135deg, #e6162d, #ff6b6b);
+            color: white;
+        }
+        
+        .share-xiaohongshu {
+            background: linear-gradient(135deg, #ff2442, #ff6b8a);
+            color: white;
+        }
+        
+        .share-douyin {
+            background: linear-gradient(135deg, #000000, #1a1a1a);
+            color: white;
+            border: 1px solid #fe2c55;
+        }
+        
+        .share-copy {
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white;
+        }
+        
+        .share-image {
+            background: linear-gradient(135deg, #fd79a8, #e84393);
+            color: white;
+        }
+        
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
         }
         
         .restart-btn {
@@ -387,6 +450,97 @@
         .restart-btn:hover {
             border-color: #6c5ce7;
             color: #6c5ce7;
+        }
+        
+        /* 分享模态框 */
+        .share-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .share-modal.active {
+            display: flex;
+        }
+        
+        .share-modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            position: relative;
+        }
+        
+        .share-modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #a0a0a0;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .share-modal-title {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+            color: #fd79a8;
+        }
+        
+        .share-canvas-container {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .share-canvas-container canvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        
+        .share-tips {
+            color: #a0a0a0;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        
+        .share-platforms {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .share-platform-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: transform 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .share-platform-btn:hover {
+            transform: scale(1.1);
         }
         
         @keyframes fadeIn {
@@ -479,8 +633,61 @@
             </div>
             
             <div class="share-section">
-                <button class="share-btn" onclick="shareResult()">📤 分享结果</button>
-                <button class="restart-btn" onclick="restartQuiz()">重新测试</button>
+                <p class="share-title">📤 分享你的测试结果</p>
+                
+                <div class="share-buttons">
+                    <button class="share-btn share-image" onclick="generateShareImage()">
+                        🖼️ 生成分享图
+                    </button>
+                    <button class="share-btn share-copy" onclick="copyShareLink()">
+                        📋 复制链接
+                    </button>
+                </div>
+                
+                <p class="share-title">分享到</p>
+                <div class="share-buttons">
+                    <button class="share-btn share-wechat" onclick="shareToWechat()">
+                        💬 微信
+                    </button>
+                    <button class="share-btn share-qq" onclick="shareToQQ()">
+                        🐧 QQ
+                    </button>
+                    <button class="share-btn share-weibo" onclick="shareToWeibo()">
+                        👁️ 微博
+                    </button>
+                    <button class="share-btn share-xiaohongshu" onclick="shareToXiaohongshu()">
+                        📕 小红书
+                    </button>
+                    <button class="share-btn share-douyin" onclick="shareToDouyin()">
+                        🎵 抖音
+                    </button>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="restart-btn" onclick="restartQuiz()">重新测试</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 分享模态框 -->
+    <div class="share-modal" id="shareModal">
+        <div class="share-modal-content">
+            <button class="share-modal-close" onclick="closeShareModal()">✕</button>
+            <h3 class="share-modal-title">🎉 保存图片分享</h3>
+            <div class="share-canvas-container" id="canvasContainer">
+                <!-- Canvas 将在这里生成 -->
+            </div>
+            <p class="share-tips">
+                长按图片保存到相册<br>
+                然后分享到朋友圈/小红书/抖音
+            </p>
+            <div class="share-platforms">
+                <button class="share-platform-btn share-wechat" onclick="shareToWechat()" title="微信">💬</button>
+                <button class="share-platform-btn share-xiaohongshu" onclick="shareToXiaohongshu()" title="小红书">📕</button>
+                <button class="share-platform-btn share-douyin" onclick="shareToDouyin()" title="抖音">🎵</button>
+                <button class="share-platform-btn share-weibo" onclick="shareToWeibo()" title="微博">👁️</button>
+                <button class="share-platform-btn share-qq" onclick="shareToQQ()" title="QQ">🐧</button>
             </div>
         </div>
     </div>
@@ -816,9 +1023,12 @@
         }
         
         // 分享结果
+        var currentResult = null;
+        
         function shareResult() {
             const result = calculateResult();
-            const text = `我在卡塞尔学院入学测试中被评定为${result.bloodline}级混血种，觉醒言灵「${result.enchantment.name}」！\n\n快来测试你的血统：https://silver1182.github.io/dontdie-ai/dragon-test.html`;
+            currentResult = result;
+            const text = `我在卡塞尔学院入学测试中被评定为${result.bloodline}级混血种，觉醒言灵「${result.enchantment.name}」！\n\n快来测试你的血统：https://silver1182.github.io/dontdie-ai/cassell-test.html`;
             
             if (navigator.share) {
                 navigator.share({
@@ -832,12 +1042,249 @@
             }
         }
         
+        // 生成分享图片
+        function generateShareImage() {
+            const result = calculateResult();
+            currentResult = result;
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const width = 750;
+            const height = 1334;
+            canvas.width = width;
+            canvas.height = height;
+            
+            // 背景渐变
+            const gradient = ctx.createLinearGradient(0, 0, 0, height);
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(0.5, '#16213e');
+            gradient.addColorStop(1, '#0f3460');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+            
+            // 装饰线条
+            ctx.strokeStyle = 'rgba(253, 121, 168, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(50, 100);
+            ctx.lineTo(700, 100);
+            ctx.stroke();
+            
+            // 标题
+            ctx.fillStyle = '#fd79a8';
+            ctx.font = 'bold 48px "Noto Serif SC", serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('🎓 卡塞尔学院', width / 2, 180);
+            ctx.font = '28px "Noto Serif SC", serif';
+            ctx.fillStyle = '#a0a0a0';
+            ctx.fillText('CASSell College Admission', width / 2, 220);
+            
+            // 入学通知书标题
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 36px "Noto Serif SC", serif';
+            ctx.fillText('入学通知书', width / 2, 300);
+            
+            // 血统等级
+            ctx.fillStyle = '#6c5ce7';
+            ctx.font = '24px "Noto Serif SC", serif';
+            ctx.fillText('血统等级', width / 2, 380);
+            
+            // 血统等级值（带渐变效果）
+            let bloodlineColor = '#636e72';
+            if (result.bloodline === 'S') bloodlineColor = '#fd79a8';
+            else if (result.bloodline === 'A') bloodlineColor = '#00cec9';
+            else if (result.bloodline === 'B') bloodlineColor = '#6c5ce7';
+            
+            ctx.fillStyle = bloodlineColor;
+            ctx.font = 'bold 80px "Noto Serif SC", serif';
+            ctx.fillText(result.bloodline + '级', width / 2, 460);
+            
+            // 言灵卡片背景
+            ctx.fillStyle = 'rgba(108, 92, 231, 0.2)';
+            ctx.strokeStyle = 'rgba(108, 92, 231, 0.5)';
+            ctx.lineWidth = 2;
+            roundRect(ctx, 75, 520, 600, 280, 15);
+            ctx.fill();
+            ctx.stroke();
+            
+            // 言灵标题
+            ctx.fillStyle = '#fd79a8';
+            ctx.font = '22px "Noto Serif SC", serif';
+            ctx.fillText('觉醒言灵', width / 2, 570);
+            
+            // 言灵名称
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 42px "Noto Serif SC", serif';
+            ctx.fillText('「' + result.enchantment.name + '」', width / 2, 620);
+            
+            // 序列号
+            ctx.fillStyle = '#6c5ce7';
+            ctx.font = '20px "Noto Serif SC", serif';
+            ctx.fillText('序列号 ' + result.enchantment.number, width / 2, 660);
+            
+            // 言灵描述（自动换行）
+            ctx.fillStyle = '#c0c0c0';
+            ctx.font = '20px "Noto Serif SC", serif';
+            wrapText(ctx, result.enchantment.desc, width / 2, 700, 550, 30);
+            
+            // 咏唱文
+            ctx.fillStyle = '#fd79a8';
+            ctx.font = 'italic 22px "Noto Serif SC", serif';
+            ctx.fillText('"' + result.enchantment.chant + '"', width / 2, 780);
+            
+            // 导师和部门
+            ctx.fillStyle = '#a0a0a0';
+            ctx.font = '20px "Noto Serif SC", serif';
+            ctx.fillText('推荐导师：' + result.mentor.name, width / 2, 860);
+            ctx.fillText('适合学院：' + result.house.name, width / 2, 900);
+            
+            // 名言
+            ctx.fillStyle = 'rgba(253, 121, 168, 0.3)';
+            roundRect(ctx, 75, 940, 600, 100, 10);
+            ctx.fill();
+            
+            ctx.fillStyle = '#c0c0c0';
+            ctx.font = 'italic 20px "Noto Serif SC", serif';
+            wrapText(ctx, '"' + result.enchantment.quote + '"', width / 2, 980, 550, 28);
+            ctx.font = '16px "Noto Serif SC", serif';
+            ctx.fillStyle = '#6c5ce7';
+            ctx.fillText('——' + result.enchantment.name, width / 2, 1020);
+            
+            // 二维码区域
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '18px "Noto Serif SC", serif';
+            ctx.fillText('扫描二维码 测试你的血统', width / 2, 1100);
+            
+            // 模拟二维码（方形）
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            roundRect(ctx, 325, 1120, 100, 100, 5);
+            ctx.fill();
+            ctx.fillStyle = '#1a1a2e';
+            ctx.font = '12px monospace';
+            ctx.fillText('扫码测试', 350, 1170);
+            
+            // 底部文字
+            ctx.fillStyle = '#636e72';
+            ctx.font = '16px "Noto Serif SC", serif';
+            ctx.fillText('silver1182.github.io/dontdie-ai', width / 2, 1260);
+            
+            // 显示模态框
+            const container = document.getElementById('canvasContainer');
+            container.innerHTML = '';
+            canvas.style.maxWidth = '100%';
+            canvas.style.height = 'auto';
+            container.appendChild(canvas);
+            
+            document.getElementById('shareModal').classList.add('active');
+            
+            // 保存canvas引用以便下载
+            window.shareCanvas = canvas;
+        }
+        
+        // 绘制圆角矩形
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+        
+        // 文字自动换行
+        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+            const words = text.split('');
+            let line = '';
+            let testLine = '';
+            
+            for (let i = 0; i < words.length; i++) {
+                testLine = line + words[i];
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > maxWidth && i > 0) {
+                    ctx.fillText(line, x, y);
+                    line = words[i];
+                    y += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line, x, y);
+        }
+        
+        // 关闭分享模态框
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.remove('active');
+        }
+        
+        // 复制分享链接
+        function copyShareLink() {
+            const result = calculateResult();
+            const text = `我在卡塞尔学院入学测试中被评定为${result.bloodline}级混血种，觉醒言灵「${result.enchantment.name}」！\n\n快来测试你的血统：https://silver1182.github.io/dontdie-ai/cassell-test.html`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('链接已复制！快去分享给朋友吧~');
+            }).catch(() => {
+                // 降级方案
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('链接已复制！快去分享给朋友吧~');
+            });
+        }
+        
+        // 分享到微信
+        function shareToWechat() {
+            alert('请截图保存图片，然后打开微信分享~\n\n💡 提示：朋友圈建议发图片+文字，效果最佳！');
+        }
+        
+        // 分享到QQ
+        function shareToQQ() {
+            const result = calculateResult();
+            const title = '卡塞尔学院入学测试';
+            const desc = `我被评定为${result.bloodline}级混血种，觉醒言灵「${result.enchantment.name}」！快来测试你的血统~`;
+            const url = 'https://silver1182.github.io/dontdie-ai/cassell-test.html';
+            
+            // QQ分享URL
+            const qqUrl = `https://connect.qq.com/widget/shareqq/index.html?title=${encodeURIComponent(title)}&desc=${encodeURIComponent(desc)}&url=${encodeURIComponent(url)}`;
+            window.open(qqUrl, '_blank', 'width=600,height=500');
+        }
+        
+        // 分享到微博
+        function shareToWeibo() {
+            const result = calculateResult();
+            const text = `我在卡塞尔学院入学测试中被评定为${result.bloodline}级混血种，觉醒言灵「${result.enchantment.name}」！快来测试你的血统~ https://silver1182.github.io/dontdie-ai/cassell-test.html`;
+            
+            const weiboUrl = `https://service.weibo.com/share/share.php?title=${encodeURIComponent(text)}`;
+            window.open(weiboUrl, '_blank', 'width=600,height=500');
+        }
+        
+        // 分享到小红书
+        function shareToXiaohongshu() {
+            alert('小红书分享指南：\n\n1️⃣ 点击"生成分享图"保存图片\n2️⃣ 打开小红书发布笔记\n3️⃣ 上传保存的图片\n4️⃣ 文案建议：\n   「卡塞尔学院入学测试！我是' + (currentResult ? currentResult.bloodline : 'S') + '级混血种，觉醒「' + (currentResult ? currentResult.enchantment.name : '不要死') + '」！\n   快来测试你的血统~\n   #龙族 #卡塞尔学院 #混血种 #路明非」\n\n5️⃣ 添加话题标签：#龙族 #卡塞尔学院 #混血种测试');
+        }
+        
+        // 分享到抖音
+        function shareToDouyin() {
+            alert('抖音分享指南：\n\n1️⃣ 录屏测试过程（从做题到出结果）\n2️⃣ 打开抖音发布视频\n3️⃣ 文案建议：\n   「卡塞尔学院入学测试！我是' + (currentResult ? currentResult.bloodline : 'S') + '级混血种！\n   评论区测测你的血统~\n   链接在主页」\n\n4️⃣ 视频建议：\n   - 开头：展示题目\n   - 中间：快速过题\n   - 结尾：展示结果卡片\n   - BGM：用燃一点的音乐\n\n5️⃣ 评论区置顶链接');
+        }
+        
         // 重新开始
         function restartQuiz() {
             document.getElementById('resultPage').style.display = 'none';
             document.getElementById('startPage').style.display = 'block';
             currentQuestion = 0;
-            Object.keys(scores).forEach(key => scores[key] = 0);
+            for (var key in scores) {
+                scores[key] = 0;
+            }
+            currentResult = null;
         }
         
         // 初始化
