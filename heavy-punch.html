@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>重拳出击 - 喷子清算系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        /* 血迹背景效果 */
+        .blood-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.1;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(231, 76, 60, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(192, 57, 43, 0.2) 0%, transparent 40%);
+            animation: bloodPulse 3s infinite;
+        }
+        
+        @keyframes bloodPulse {
+            0%, 100% { opacity: 0.1; }
+            50% { opacity: 0.15; }
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 3px solid #e74c3c;
+            margin-bottom: 20px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            color: #e74c3c;
+            text-shadow: 
+                0 0 10px rgba(231, 76, 60, 0.8),
+                0 0 20px rgba(231, 76, 60, 0.5),
+                0 0 30px rgba(231, 76, 60, 0.3);
+            animation: titleShake 2s infinite;
+        }
+        
+        @keyframes titleShake {
+            0%, 90%, 100% { transform: translateX(0); }
+            92% { transform: translateX(-3px); }
+            94% { transform: translateX(3px); }
+            96% { transform: translateX(-3px); }
+            98% { transform: translateX(3px); }
+        }
+        
+        .game-area {
+            background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 100%);
+            border: 2px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 500px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-area::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #e74c3c, transparent, #c0392b);
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        /* 敌人区域 */
+        .enemy-zone {
+            text-align: center;
+            padding: 30px;
+            position: relative;
+        }
+        
+        .enemy-avatar {
+            font-size: 8rem;
+            display: inline-block;
+            transition: all 0.1s;
+            filter: drop-shadow(0 0 20px rgba(231, 76, 60, 0.5));
+        }
+        
+        .enemy-avatar.hit {
+            animation: avatarHit 0.3s ease;
+        }
+        
+        @keyframes avatarHit {
+            0% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(0.9) rotate(-10deg); }
+            50% { transform: scale(1.1) rotate(10deg); }
+            75% { transform: scale(0.95) rotate(-5deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+        
+        .enemy-name {
+            font-size: 1.5rem;
+            color: #e74c3c;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        .enemy-title {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+        
+        /* 血条 */
+        .hp-container {
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        
+        .hp-bar {
+            height: 30px;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .hp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+            border-radius: 13px;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+        
+        .hp-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.3), transparent);
+        }
+        
+        .hp-text {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 1.2rem;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        /* 伤害数字 */
+        .damage-number {
+            position: absolute;
+            font-size: 3rem;
+            font-weight: bold;
+            color: #e74c3c;
+            text-shadow: 0 0 20px rgba(231, 76, 60, 0.8);
+            pointer-events: none;
+            animation: damageFloat 1s ease forwards;
+            z-index: 100;
+        }
+        
+        @keyframes damageFloat {
+            0% {
+                transform: translateY(0) scale(0.5);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(-50px) scale(1.2);
+            }
+            100% {
+                transform: translateY(-100px) scale(1);
+                opacity: 0;
+            }
+        }
+        
+        .crit-text {
+            color: #ffd700;
+            font-size: 4rem;
+            text-shadow: 
+                0 0 10px #ffd700,
+                0 0 20px #ff6600;
+        }
+        
+        /* 对话区域 */
+        .dialogue-box {
+            background: rgba(0, 0, 0, 0.6);
+            border-left: 4px solid #e74c3c;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 100px;
+        }
+        
+        .dialogue-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+        
+        .dialogue-text .enemy {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .dialogue-text .player {
+            color: #3498db;
+            font-weight: bold;
+        }
+        
+        .dialogue-text .damage {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+        
+        /* 连招显示 */
+        .combo-display {
+            text-align: center;
+            margin: 15px 0;
+            height: 40px;
+        }
+        
+        .combo-text {
+            font-size: 2rem;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .combo-text.show {
+            opacity: 1;
+            animation: comboPulse 0.5s ease;
+        }
+        
+        @keyframes comboPulse {
+            0% { transform: scale(0.5); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        /* 攻击按钮 */
+        .attack-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .attack-btn {
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(192, 57, 43, 0.2));
+            border: 2px solid #e74c3c;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .attack-btn:hover {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.4), rgba(192, 57, 43, 0.4));
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(231, 76, 60, 0.3);
+        }
+        
+        .attack-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        .attack-btn .damage-tag {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #e74c3c;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+        
+        .attack-btn.finisher {
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.3), rgba(142, 68, 173, 0.3));
+            border-color: #9b59b6;
+            grid-column: span 2;
+        }
+        
+        .attack-btn.finisher:hover {
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.5), rgba(142, 68, 173, 0.5));
+            box-shadow: 0 10px 30px rgba(155, 89, 182, 0.4);
+        }
+        
+        /* 特效 */
+        .screen-shake {
+            animation: screenShake 0.5s ease;
+        }
+        
+        @keyframes screenShake {
+            0%, 100% { transform: translate(0, 0); }
+            10% { transform: translate(-10px, -5px); }
+            20% { transform: translate(10px, 5px); }
+            30% { transform: translate(-10px, 5px); }
+            40% { transform: translate(10px, -5px); }
+            50% { transform: translate(-5px, 10px); }
+            60% { transform: translate(5px, -10px); }
+            70% { transform: translate(-5px, -10px); }
+            80% { transform: translate(5px, 10px); }
+            90% { transform: translate(-2px, -2px); }
+        }
+        
+        .flash-red {
+            animation: flashRed 0.3s ease;
+        }
+        
+        @keyframes flashRed {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(231, 76, 60, 0.3); }
+        }
+        
+        /* 结束画面 */
+        .end-screen {
+            display: none;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .end-screen.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .end-title {
+            font-size: 3rem;
+            color: #e74c3c;
+            margin-bottom: 20px;
+            text-shadow: 0 0 30px rgba(231, 76, 60, 0.5);
+        }
+        
+        .end-emoji {
+            font-size: 10rem;
+            margin: 30px 0;
+            animation: endEmoji 2s ease infinite;
+        }
+        
+        @keyframes endEmoji {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .end-text {
+            font-size: 1.2rem;
+            color: #ccc;
+            line-height: 2;
+            margin-bottom: 30px;
+        }
+        
+        .end-stats {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid #e74c3c;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .end-stats h3 {
+            color: #e74c3c;
+            margin-bottom: 15px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .restart-btn {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+            margin-top: 20px;
+        }
+        
+        .restart-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 { font-size: 2rem; }
+            .enemy-avatar { font-size: 6rem; }
+            .attack-grid { grid-template-columns: 1fr; }
+            .attack-btn.finisher { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="blood-bg"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>👊 重拳出击</h1>
+        </div>
+        
+        <div class="game-area" id="gameArea">
+            <!-- 战斗界面 -->
+            <div id="battle-screen">
+                <div class="enemy-zone">
+                    <div class="enemy-avatar" id="enemyAvatar">😈</div>
+                    <div class="enemy-name">「嘴强王者」</div>
+                    <div class="enemy-title">Lv.99 职业喷子 · 0-12战绩</div>
+                    
+                    <div class="hp-container">
+                        <div class="hp-bar">
+                            <div class="hp-fill" id="hpFill" style="width: 100%"></div>
+                        </div>
+                        <div class="hp-text" id="hpText">嚣张值: 100/100</div>
+                    </div>
+                </div>
+                
+                <div class="combo-display">
+                    <div class="combo-text" id="comboText"></div>
+                </div>
+                
+                <div class="dialogue-box">
+                    <div class="dialogue-text" id="dialogueText">
+                        <span class="enemy">嘴强王者:</span> 哈哈哈菜鸡！就你这水平还好意思打游戏？回家养猪去吧！😂
+                    </div>
+                </div>
+                
+                <div class="attack-grid" id="attackGrid">
+                    <button class="attack-btn" onclick="attack(1)">
+                        👊 直拳打脸
+                        <span class="damage-tag">-15</span>
+                    </button>
+                    
+                    <button class="attack-btn" onclick="attack(2)">
+                        🦶 一记飞踢
+                        <span class="damage-tag">-20</span>
+                    </button>
+                    
+                    <button class="attack-btn" onclick="attack(3)">
+                        📊 战绩截图羞辱
+                        <span class="damage-tag">-25</span>
+                    </button>
+                    
+                    <button class="attack-btn" onclick="attack(4)">
+                        🎤 温柔嘲讽
+                        <span class="damage-tag">暴击</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 结束画面 -->
+            <div class="end-screen" id="endScreen">
+                <div class="end-title">💀 清算完成</div>
+                <div class="end-emoji" id="endEmoji">🤡</div>
+                
+                <div class="end-text" id="endText"></div>
+                
+                <div class="end-stats">
+                    <h3>📊 战斗统计</h3>
+                    <div class="stat-item">
+                        <span>总伤害</span>
+                        <span id="statDamage">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>攻击次数</span>
+                        <span id="statHits">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>最高连击</span>
+                        <span id="statCombo">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>暴击次数</span>
+                        <span id="statCrit">0</span>
+                    </div>
+                </div>
+                
+                <button class="restart-btn" onclick="restart()">
+                    🔄 再来一次
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let enemyHp = 100;
+        let combo = 0;
+        let maxCombo = 0;
+        let totalDamage = 0;
+        let hitCount = 0;
+        let critCount = 0;
+        let lastAttackTime = 0;
+        let comboTimer = null;
+        
+        const enemyLines = [
+            "嘴强王者: 哈哈哈菜鸡！就你这水平还好意思打游戏？回家养猪去吧！😂",
+            "嘴强王者: 气不气？我就喜欢看你这种废物无能狂怒的样子！😏",
+            "嘴强王者: 来啊来啊！你打我啊！有本事顺着网线过来打我啊！😜",
+            "嘴强王者: 哎哟哟，生气了？我就是逗你玩呢~略略略！😝",
+            "嘴强王者: 等等...你怎么来真的？！😰",
+            "嘴强王者: 哎哟！别打了！我错了！😭",
+            "嘴强王者: 大哥饶命！我不该喷人的！😱",
+            "嘴强王者: 呜呜呜...我知道错了...别打了...😭",
+            "嘴强王者: 我...我再也不敢了...放过我吧...🤕"
+        ];
+        
+        const attackTypes = [
+            { name: '直拳打脸', damage: 15, crit: false },
+            { name: '一记飞踢', damage: 20, crit: false },
+            { name: '战绩截图羞辱', damage: 25, crit: false },
+            { name: '温柔嘲讽', damage: 30, crit: true }
+        ];
+        
+        function attack(type) {
+            const now = Date.now();
+            const attackInfo = attackTypes[type - 1];
+            let damage = attackInfo.damage;
+            let isCrit = false;
+            
+            // 连击系统
+            if (now - lastAttackTime < 2000) {
+                combo++;
+                if (combo > maxCombo) maxCombo = combo;
+                
+                // 连击加成
+                if (combo >= 3) {
+                    damage = Math.floor(damage * (1 + combo * 0.1));
+                }
+                
+                showCombo();
+            } else {
+                combo = 1;
+            }
+            
+            lastAttackTime = now;
+            
+            // 暴击判定
+            if (attackInfo.crit && Math.random() < 0.3) {
+                damage = Math.floor(damage * 1.5);
+                isCrit = true;
+                critCount++;
+            }
+            
+            // 应用伤害
+            enemyHp = Math.max(0, enemyHp - damage);
+            totalDamage += damage;
+            hitCount++;
+            
+            // 更新显示
+            updateHP();
+            showDamage(damage, isCrit);
+            shakeScreen();
+            
+            // 更新对话
+            const lineIndex = Math.min(Math.floor((100 - enemyHp) / 12), enemyLines.length - 1);
+            document.getElementById('dialogueText').innerHTML = enemyLines[lineIndex];
+            
+            // 敌人表情变化
+            updateEnemyAvatar();
+            
+            // 检查结束
+            if (enemyHp <= 0) {
+                setTimeout(endGame, 500);
+            }
+        }
+        
+        function updateHP() {
+            document.getElementById('hpFill').style.width = enemyHp + '%';
+            document.getElementById('hpText').textContent = '嚣张值: ' + enemyHp + '/100';
+        }
+        
+        function showDamage(damage, isCrit) {
+            const damageEl = document.createElement('div');
+            damageEl.className = 'damage-number';
+            damageEl.textContent = (isCrit ? '暴击! ' : '-') + damage;
+            if (isCrit) damageEl.classList.add('crit-text');
+            
+            const enemyZone = document.querySelector('.enemy-zone');
+            const rect = enemyZone.getBoundingClientRect();
+            damageEl.style.left = (rect.width / 2 + (Math.random() - 0.5) * 100) + 'px';
+            damageEl.style.top = '50px';
+            
+            enemyZone.appendChild(damageEl);
+            
+            setTimeout(() => damageEl.remove(), 1000);
+        }
+        
+        function showCombo() {
+            const comboText = document.getElementById('comboText');
+            if (combo >= 2) {
+                comboText.textContent = combo + '连击!';
+                comboText.classList.add('show');
+                
+                clearTimeout(comboTimer);
+                comboTimer = setTimeout(() => {
+                    comboText.classList.remove('show');
+                }, 2000);
+            }
+        }
+        
+        function shakeScreen() {
+            document.getElementById('gameArea').classList.add('screen-shake');
+            document.body.classList.add('flash-red');
+            
+            setTimeout(() => {
+                document.getElementById('gameArea').classList.remove('screen-shake');
+                document.body.classList.remove('flash-red');
+            }, 500);
+            
+            // 敌人受击动画
+            document.getElementById('enemyAvatar').classList.add('hit');
+            setTimeout(() => {
+                document.getElementById('enemyAvatar').classList.remove('hit');
+            }, 300);
+        }
+        
+        function updateEnemyAvatar() {
+            const avatar = document.getElementById('enemyAvatar');
+            if (enemyHp > 70) avatar.textContent = '😈';
+            else if (enemyHp > 50) avatar.textContent = '😤';
+            else if (enemyHp > 30) avatar.textContent = '😰';
+            else if (enemyHp > 10) avatar.textContent = '😭';
+            else avatar.textContent = '🤡';
+        }
+        
+        function endGame() {
+            document.getElementById('battle-screen').style.display = 'none';
+            document.getElementById('endScreen').classList.add('show');
+            
+            // 统计
+            document.getElementById('statDamage').textContent = totalDamage;
+            document.getElementById('statHits').textContent = hitCount;
+            document.getElementById('statCombo').textContent = maxCombo;
+            document.getElementById('statCrit').textContent = critCount;
+            
+            // 结局文本
+            const endTexts = [
+                "经过你的"教育"，嘴强王者终于崩溃了。他开始痛哭流涕，疯狂道歉，最后删游戏跑路了。",
+                "你的每一次攻击都精准命中他的自尊心。现在他安静如鸡，再也不敢在游戏里乱喷了。",
+                "嘴强王者？不，现在他是嘴弱废物。你的战绩截图还在群里挂着呢，社死现场。"
+            ];
+            document.getElementById('endText').textContent = endTexts[Math.floor(Math.random() * endTexts.length)];
+        }
+        
+        function restart() {
+            enemyHp = 100;
+            combo = 0;
+            maxCombo = 0;
+            totalDamage = 0;
+            hitCount = 0;
+            critCount = 0;
+            lastAttackTime = 0;
+            
+            document.getElementById('battle-screen').style.display = 'block';
+            document.getElementById('endScreen').classList.remove('show');
+            
+            updateHP();
+            document.getElementById('dialogueText').innerHTML = enemyLines[0];
+            document.getElementById('enemyAvatar').textContent = '😈';
+        }
+    </script>
+</body>
+</html>
