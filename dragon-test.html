@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卡塞尔学院入学测试</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #eaeaea;
+            overflow-x: hidden;
+        }
+        
+        /* 粒子背景 */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(108, 92, 231, 0.6);
+            border-radius: 50%;
+            animation: float 15s infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        /* 主容器 */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 标题 */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 1s ease;
+        }
+        
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #fd79a8, #6c5ce7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .subtitle {
+            color: #a0a0a0;
+            font-size: 1.1rem;
+        }
+        
+        .motto {
+            margin-top: 1rem;
+            font-style: italic;
+            color: #fd79a8;
+            font-size: 0.9rem;
+        }
+        
+        /* 开始页面 */
+        .start-page {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: rgba(22, 33, 62, 0.8);
+            border-radius: 20px;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 1s ease;
+        }
+        
+        .intro {
+            margin: 2rem 0;
+            line-height: 1.8;
+            color: #c0c0c0;
+        }
+        
+        .intro p {
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 1rem 3rem;
+            background: linear-gradient(135deg, #6c5ce7, #fd79a8);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            margin-top: 1rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(108, 92, 231, 0.4);
+        }
+        
+        /* 测试页面 */
+        .quiz-page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(108, 92, 231, 0.2);
+            border-radius: 3px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6c5ce7, #fd79a8);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        
+        .question-card {
+            background: rgba(22, 33, 62, 0.9);
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        
+        .question-number {
+            color: #fd79a8;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .question-text {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .option {
+            padding: 1.2rem 1.5rem;
+            background: rgba(108, 92, 231, 0.1);
+            border: 2px solid rgba(108, 92, 231, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .option:hover {
+            background: rgba(108, 92, 231, 0.2);
+            border-color: #6c5ce7;
+            transform: translateX(10px);
+        }
+        
+        .option-letter {
+            width: 32px;
+            height: 32px;
+            background: rgba(108, 92, 231, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .option-text {
+            flex: 1;
+        }
+        
+        /* 结果页面 */
+        .result-page {
+            display: none;
+            animation: fadeIn 1s ease;
+        }
+        
+        .admission-card {
+            background: linear-gradient(135deg, rgba(22, 33, 62, 0.95), rgba(15, 52, 96, 0.95));
+            border-radius: 20px;
+            padding: 3rem;
+            border: 2px solid rgba(253, 121, 168, 0.3);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .admission-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(253, 121, 168, 0.1), transparent);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        
+        .card-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .card-title {
+            font-size: 1.8rem;
+            color: #fd79a8;
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-subtitle {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+        
+        .result-section {
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .result-label {
+            color: #6c5ce7;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .bloodline {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            background: linear-gradient(135deg, #fd79a8, #e74c3c);
+            border-radius: 30px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+        }
+        
+        .enchantment-card {
+            background: rgba(108, 92, 231, 0.1);
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+        }
+        
+        .enchantment-name {
+            font-size: 1.3rem;
+            color: #fd79a8;
+            margin-bottom: 0.5rem;
+        }
+        
+        .enchantment-number {
+            color: #6c5ce7;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .enchantment-desc {
+            color: #c0c0c0;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        
+        .enchantment-chant {
+            font-style: italic;
+            color: #fd79a8;
+            padding: 1rem;
+            background: rgba(253, 121, 168, 0.1);
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .quote {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-left: 4px solid #fd79a8;
+            background: rgba(253, 121, 168, 0.05);
+            font-style: italic;
+            color: #c0c0c0;
+        }
+        
+        .quote-author {
+            margin-top: 0.5rem;
+            color: #6c5ce7;
+            font-size: 0.9rem;
+        }
+        
+        .share-section {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .share-btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #00cec9, #0984e3);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0 0.5rem;
+        }
+        
+        .share-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 206, 201, 0.4);
+        }
+        
+        .restart-btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: transparent;
+            color: #a0a0a0;
+            border: 2px solid rgba(160, 160, 160, 0.3);
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+        
+        .restart-btn:hover {
+            border-color: #6c5ce7;
+            color: #6c5ce7;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 响应式 */
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .container { padding: 1rem; }
+            .question-card { padding: 1.5rem; }
+            .admission-card { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 粒子背景 -->
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="logo">🐉</div>
+            <h1>卡塞尔学院</h1>
+            <p class="subtitle">CASSell College Admission Test</p>
+            <p class="motto">"凡王之血，必以剑终"</p>
+        </header>
+        
+        <!-- 开始页面 -->
+        <div class="start-page" id="startPage">
+            <div class="intro">
+                <p>欢迎来到卡塞尔学院，这里是混血种的摇篮，屠龙者的聚集地。</p>
+                <p>你将接受一系列心理测试，以确定你的血统等级、觉醒的言灵，以及最适合你的导师。</p>
+                <p>记住，在龙族的世界里，勇气、牺牲和孤独感是评判一个混血种最重要的标准。</p>
+                <p style="color: #fd79a8; margin-top: 1.5rem;">⚠️ 警告：本测试仅限混血种参与，普通人类请勿尝试</p>
+            </div>
+            <button class="btn" onclick="startQuiz()">开始测试</button>
+        </div>
+        
+        <!-- 测试页面 -->
+        <div class="quiz-page" id="quizPage">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="question-card">
+                <div class="question-number" id="questionNumber">问题 1/10</div>
+                <div class="question-text" id="questionText">加载中...</div>
+                <div class="options" id="optionsContainer"></div>
+            </div>
+        </div>
+        
+        <!-- 结果页面 -->
+        <div class="result-page" id="resultPage">
+            <div class="admission-card">
+                <div class="card-header">
+                    <div class="card-title">🎓 卡塞尔学院入学通知书</div>
+                    <div class="card-subtitle">CASSell College Admission Letter</div>
+                </div>
+                
+                <div class="result-section">
+                    <div class="result-label">血统等级</div>
+                    <div class="bloodline" id="bloodlineResult">S级</div>
+                </div>
+                
+                <div class="result-section">
+                    <div class="result-label">觉醒言灵</div>
+                    <div class="enchantment-card">
+                        <div class="enchantment-name" id="enchantmentName">不要死</div>
+                        <div class="enchantment-number" id="enchantmentNumber">序列号 ？</div>
+                        <div class="enchantment-desc" id="enchantmentDesc">强制维持生命体征，即使是致命伤也能暂时吊住一口气。</div>
+                        <div class="enchantment-chant" id="enchantmentChant">"不要死..."</div>
+                    </div>
+                </div>
+                
+                <div class="result-section">
+                    <div class="result-label">推荐导师</div>
+                    <div class="result-value" id="mentorResult">昂热校长</div>
+                </div>
+                
+                <div class="result-section">
+                    <div class="result-label">适合学院</div>
+                    <div class="result-value" id="houseResult">执行部</div>
+                </div>
+                
+                <div class="quote">
+                    <div id="quoteText">"我这种人，也就只有这点用了。"</div>
+                    <div class="quote-author" id="quoteAuthor">——路明非</div>
+                </div>
+            </div>
+            
+            <div class="share-section">
+                <button class="share-btn" onclick="shareResult()">📤 分享结果</button>
+                <button class="restart-btn" onclick="restartQuiz()">重新测试</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 测试题目
+        const questions = [
+            {
+                question: "面对强大的敌人，你会选择？",
+                options: [
+                    { text: "拼尽全力，哪怕代价是生命", score: { bravery: 3, sacrifice: 3 } },
+                    { text: "寻找机会逃跑，保存实力", score: { bravery: 1, wisdom: 3 } },
+                    { text: "等待援军，相信同伴", score: { teamwork: 3, trust: 3 } },
+                    { text: "装死，找机会偷袭", score: { cunning: 3, survival: 3 } }
+                ]
+            },
+            {
+                question: "如果必须牺牲一个人才能拯救世界，你会？",
+                options: [
+                    { text: "牺牲自己", score: { sacrifice: 5, bravery: 2 } },
+                    { text: "牺牲敌人", score: { pragmatism: 3, ruthlessness: 2 } },
+                    { text: "寻找不牺牲任何人的方法", score: { idealism: 5, stubbornness: 2 } },
+                    { text: "让命运决定", score: { fatalism: 3, passivity: 2 } }
+                ]
+            },
+            {
+                question: "你最害怕的是什么？",
+                options: [
+                    { text: "孤独", score: { loneliness: 5, empathy: 2 } },
+                    { text: "死亡", score: { survival: 3, fear: 2 } },
+                    { text: "失去重要的人", score: { attachment: 5, love: 2 } },
+                    { text: "无法变强", score: { ambition: 5, pride: 2 } }
+                ]
+            },
+            {
+                question: "深夜一个人走在空无一人的街道上，你会想？",
+                options: [
+                    { text: "享受这种孤独感", score: { solitude: 5, introversion: 3 } },
+                    { text: "希望有人陪在身边", score: { loneliness: 3, need: 3 } },
+                    { text: "警惕周围是否有危险", score: { vigilance: 5, paranoia: 2 } },
+                    { text: "想点开心的事情", score: { optimism: 5, escapism: 2 } }
+                ]
+            },
+            {
+                question: "如果给你一次重来的机会，你会？",
+                options: [
+                    { text: "做出同样的选择", score: { conviction: 5, stubbornness: 2 } },
+                    { text: "尝试不同的道路", score: { curiosity: 5, regret: 2 } },
+                    { text: "救回失去的人", score: { attachment: 5, love: 3 } },
+                    { text: "避免所有的错误", score: { perfectionism: 5, anxiety: 2 } }
+                ]
+            },
+            {
+                question: "面对不可战胜的敌人，你的反应是？",
+                options: [
+                    { text: "即使必死也要亮剑", score: { bravery: 5, pride: 3 } },
+                    { text: "寻找他的弱点", score: { wisdom: 5, patience: 2 } },
+                    { text: "祈求神明的帮助", score: { faith: 5, helplessness: 2 } },
+                    { text: "接受命运", score: { fatalism: 5, acceptance: 2 } }
+                ]
+            },
+            {
+                question: "朋友背叛了你，你会？",
+                options: [
+                    { text: "理解他可能有苦衷", score: { empathy: 5, forgiveness: 3 } },
+                    { text: "永远不再信任他", score: { grudge: 5, caution: 3 } },
+                    { text: "报复回去", score: { vengeance: 5, ruthlessness: 3 } },
+                    { text: "假装不知道，暗中观察", score: { cunning: 5, detachment: 3 } }
+                ]
+            },
+            {
+                question: "你认为力量的意义是？",
+                options: [
+                    { text: "保护重要的人", score: { protection: 5, love: 3 } },
+                    { text: "获得自由和尊重", score: { ambition: 5, pride: 2 } },
+                    { text: "改变不公平的世界", score: { idealism: 5, justice: 3 } },
+                    { text: "不再被人欺负", score: { trauma: 5, survival: 2 } }
+                ]
+            },
+            {
+                question: "如果龙类是你的亲人，你会？",
+                options: [
+                    { text: "亲手终结他的痛苦", score: { ruthlessness: 5, duty: 3 } },
+                    { text: "试图拯救他", score: { hope: 5, love: 3 } },
+                    { text: "逃避这个选择", score: { escapism: 5, cowardice: 2 } },
+                    { text: "陪他一起面对", score: { loyalty: 5, sacrifice: 3 } }
+                ]
+            },
+            {
+                question: "你认为自己最像哪种人？",
+                options: [
+                    { text: "衰小孩，但关键时刻会爆种", score: { underdog: 5, potential: 3 } },
+                    { text: "天才，但背负着沉重的命运", score: { genius: 5, burden: 3 } },
+                    { text: "普通人，但永不放弃", score: { perseverance: 5, hope: 3 } },
+                    { text: "孤独的王，站在世界的顶端", score: { royalty: 5, solitude: 3 } }
+                ]
+            }
+        ];
+        
+        // 言灵数据库
+        const enchantments = [
+            { name: "不要死", number: "？", desc: "强制维持生命体征，即使是致命伤也能暂时吊住一口气。这是路明非独有的言灵，被称为"神谕"。", chant: "不要死...", quote: "我这种人，也就只有这点用了。" },
+            { name: "皇帝", number: "01", desc: "黑王尼德霍格的专属言灵，对所有龙类都有绝对的压制力。"王域"范围内，所有混血种都会不由自主地臣服。", chant: "听到汝的召唤，尼德霍格...", quote: "凡王之血，必以剑终。" },
+            { name: "烛龙", number: "114", desc: "序列号极高的危险言灵，释放时如同一轮太阳升起，能瞬间将一切化为灰烬。", chant: "燃烧吧，世界的终结...", quote: "有些火焰，是用来毁灭世界的。" },
+            { name: "君焰", number: "89", desc: "释放高温火焰，瞬间将周围一切化为焦土。楚子航的招牌言灵，象征着绝对的破坏力。", chant: "燃烧，直至虚无...", quote: "如果正义需要代价，我来承担。" },
+            { name: "风王之瞳", number: "74", desc: "操控气流形成龙卷风，攻防一体。夏弥曾用此言灵展现出惊人的战斗力。", chant: "听从风的召唤...", quote: "风是自由的，但自由需要代价。" },
+            { name: "时间零", number: "84", desc: "将自身速度提升至极限，周围的时间相对变慢。昂热校长的招牌言灵，让他成为最快的男人。", chant: "时间啊，为我停滞...", quote: "我活得够久了，时间对我来说只是数字。" },
+            { name: "审判", number: "111", desc: "释放致命的高压水流，如同死神的镰刀。源稚女的言灵，美丽而致命。", chant: "裁决之时已至...", quote: "审判不是为了正义，是为了结束。" },
+            { name: "无尘之地", number: "66", desc: "以自身为中心形成真空领域，排斥一切物质。防御型言灵的极致。", chant: "此地，不容侵犯...", quote: "我的领域，我做主。" },
+            { name: "镰鼬", number: "59", desc: "释放风妖收集情报，如同无数只眼睛和耳朵。凯撒的言灵，象征着他作为领袖的掌控力。", chant: "去吧，我的眼...", quote: " information is power." },
+            { name: "王之侍", number: "51", desc: "强化自身或他人的战斗力，是辅助型言灵的巅峰。", chant: "以王之名，赐予力量...", quote: "真正的王，不是独自强大，而是让追随者变强。" },
+            { name: "青铜御座", number: "87", desc: "强化肉体至钢铁般坚硬，如同青铜浇筑的战士。", chant: "青铜之躯，不朽不灭...", quote: "有些防御，是为了保护内心的柔软。" },
+            { name: "深血", number: "47", desc: "使血液具有腐蚀性，杀敌一千自损八百的危险言灵。", chant: "以血为祭...", quote: "痛苦是我唯一的朋友。" }
+        ];
+        
+        // 导师数据库
+        const mentors = [
+            { name: "昂热校长", desc: "卡塞尔学院的传奇校长，超过130岁的S级混血种。他的言灵"时间零"让他成为最快的男人。", quote: "我活得够久了，时间对我来说只是数字。" },
+            { name: "冯·施耐德教授", desc: "执行部负责人，冷面铁血。虽然毁容且坐轮椅，但依然是让龙类闻风丧胆的存在。", quote: "执行部不需要感情，只需要结果。" },
+            { name: "古德里安教授", desc: "路明非的导师，有些迷糊但充满热情。他是少数真正关心学生的教授。", quote: "每个学生都是潜力股，哪怕现在看起来是废柴。" },
+            { name: "曼施坦因教授", desc: "风纪委员会主席，一丝不苟。虽然是古德里安的死对头，但同样关心学生。", quote: "规则就是规则，没有例外。" },
+            { name: "守夜人", desc: "副校长，藏着太多秘密的老人。看似颓废，实则深不可测。", quote: "学院的夜晚，由我来守护。" },
+            { name: "芬格尔", desc: "看似是废柴学长，实则隐藏着不为人知的过去。也许他会成为你的损友兼导师。", quote: "别看我现在这样，当年我可是A级！" }
+        ];
+        
+        // 学院部门
+        const houses = [
+            { name: "执行部", desc: "前线作战部门，负责屠龙任务。危险但荣耀。" },
+            { name: "装备部", desc: "研发炼金武器和黑科技。疯子科学家的聚集地。" },
+            { name: "信息部", desc: "情报收集与分析。掌握世界的秘密。" },
+            { name: "校工部", desc: "后勤保障。别小看他们，都是身怀绝技的退役专员。" },
+            { name: "炼金术部", desc: "研究龙族炼金术。最接近龙族智慧的部门。" }
+        ];
+        
+        let currentQuestion = 0;
+        let scores = {
+            bravery: 0, sacrifice: 0, wisdom: 0, teamwork: 0, trust: 0,
+            cunning: 0, survival: 0, loneliness: 0, empathy: 0, attachment: 0,
+            love: 0, ambition: 0, pride: 0, solitude: 0, introversion: 0,
+            vigilance: 0, optimism: 0, conviction: 0, curiosity: 0, idealism: 0,
+            fatalism: 0, faith: 0, grudge: 0, vengeance: 0, protection: 0,
+            justice: 0, trauma: 0, underdog: 0, genius: 0, perseverance: 0,
+            royalty: 0, ruthlessness: 0, hope: 0, loyalty: 0, escapism: 0
+        };
+        
+        // 初始化粒子背景
+        function initParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+        
+        // 开始测试
+        function startQuiz() {
+            document.getElementById('startPage').style.display = 'none';
+            document.getElementById('quizPage').style.display = 'block';
+            currentQuestion = 0;
+            scores = { ...scores };
+            Object.keys(scores).forEach(key => scores[key] = 0);
+            showQuestion();
+        }
+        
+        // 显示问题
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            document.getElementById('questionNumber').textContent = `问题 ${currentQuestion + 1}/${questions.length}`;
+            document.getElementById('questionText').textContent = question.question;
+            
+            // 更新进度条
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            
+            // 显示选项
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.innerHTML = `
+                    <div class="option-letter">${String.fromCharCode(65 + index)}</div>
+                    <div class="option-text">${option.text}</div>
+                `;
+                optionDiv.onclick = () => selectOption(index);
+                optionsContainer.appendChild(optionDiv);
+            });
+        }
+        
+        // 选择选项
+        function selectOption(index) {
+            const question = questions[currentQuestion];
+            const option = question.options[index];
+            
+            // 累加分数
+            Object.keys(option.score).forEach(key => {
+                scores[key] += option.score[key];
+            });
+            
+            currentQuestion++;
+            
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+        
+        // 计算结果
+        function calculateResult() {
+            // 计算血统等级
+            let bloodline = 'D';
+            const totalScore = Object.values(scores).reduce((a, b) => a + b, 0);
+            const bravery = scores.bravery + scores.sacrifice;
+            const wisdom = scores.wisdom + scores.vigilance;
+            const royalty = scores.royalty + scores.pride + scores.ambition;
+            
+            if (royalty >= 8 || scores.bravery >= 10) {
+                bloodline = 'S';
+            } else if (bravery >= 7 || scores.sacrifice >= 8) {
+                bloodline = 'A';
+            } else if (wisdom >= 6 || scores.teamwork >= 6) {
+                bloodline = 'B';
+            } else if (scores.cunning >= 5 || scores.survival >= 5) {
+                bloodline = 'C';
+            }
+            
+            // 特殊情况：如果非常像路明非
+            if (scores.underdog >= 5 && scores.loneliness >= 4 && scores.bravery >= 3) {
+                bloodline = 'S';
+            }
+            
+            // 选择言灵
+            let enchantment;
+            if (scores.underdog >= 5 && scores.bravery >= 3) {
+                enchantment = enchantments[0]; // 不要死
+            } else if (royalty >= 8) {
+                enchantment = enchantments[1]; // 皇帝
+            } else if (scores.sacrifice >= 7) {
+                enchantment = enchantments[3]; // 君焰
+            } else if (scores.wisdom >= 6) {
+                enchantment = enchantments[7]; // 无尘之地
+            } else if (scores.teamwork >= 6) {
+                enchantment = enchantments[9]; // 王之侍
+            } else if (scores.loneliness >= 5) {
+                enchantment = enchantments[4]; // 风王之瞳
+            } else if (scores.vengeance >= 5) {
+                enchantment = enchantments[6]; // 审判
+            } else if (scores.curiosity >= 5) {
+                enchantment = enchantments[8]; // 镰鼬
+            } else {
+                enchantment = enchantments[Math.floor(Math.random() * (enchantments.length - 1)) + 1];
+            }
+            
+            // 选择导师
+            let mentor;
+            if (bloodline === 'S') {
+                mentor = mentors[0]; // 昂热
+            } else if (scores.ruthlessness >= 4) {
+                mentor = mentors[1]; // 施耐德
+            } else if (scores.underdog >= 4) {
+                mentor = mentors[2]; // 古德里安
+            } else if (scores.conviction >= 4) {
+                mentor = mentors[3]; // 曼施坦因
+            } else if (scores.wisdom >= 4) {
+                mentor = mentors[4]; // 守夜人
+            } else {
+                mentor = mentors[5]; // 芬格尔
+            }
+            
+            // 选择部门
+            let house;
+            if (scores.bravery >= 5 || scores.sacrifice >= 5) {
+                house = houses[0]; // 执行部
+            } else if (scores.curiosity >= 4) {
+                house = houses[1]; // 装备部
+            } else if (scores.wisdom >= 4) {
+                house = houses[2]; // 信息部
+            } else if (scores.teamwork >= 4) {
+                house = houses[3]; // 校工部
+            } else {
+                house = houses[4]; // 炼金术部
+            }
+            
+            return { bloodline, enchantment, mentor, house };
+        }
+        
+        // 显示结果
+        function showResult() {
+            const result = calculateResult();
+            
+            document.getElementById('quizPage').style.display = 'none';
+            document.getElementById('resultPage').style.display = 'block';
+            
+            // 设置血统颜色
+            const bloodlineEl = document.getElementById('bloodlineResult');
+            bloodlineEl.textContent = result.bloodline + '级';
+            if (result.bloodline === 'S') {
+                bloodlineEl.style.background = 'linear-gradient(135deg, #fd79a8, #e74c3c)';
+            } else if (result.bloodline === 'A') {
+                bloodlineEl.style.background = 'linear-gradient(135deg, #00cec9, #0984e3)';
+            } else if (result.bloodline === 'B') {
+                bloodlineEl.style.background = 'linear-gradient(135deg, #6c5ce7, #a29bfe)';
+            } else {
+                bloodlineEl.style.background = 'linear-gradient(135deg, #636e72, #b2bec3)';
+            }
+            
+            // 设置言灵
+            document.getElementById('enchantmentName').textContent = result.enchantment.name;
+            document.getElementById('enchantmentNumber').textContent = '序列号 ' + result.enchantment.number;
+            document.getElementById('enchantmentDesc').textContent = result.enchantment.desc;
+            document.getElementById('enchantmentChant').textContent = '"' + result.enchantment.chant + '"';
+            
+            // 设置导师
+            document.getElementById('mentorResult').textContent = result.mentor.name;
+            
+            // 设置部门
+            document.getElementById('houseResult').textContent = result.house.name;
+            
+            // 设置名言
+            document.getElementById('quoteText').textContent = '"' + result.enchantment.quote + '"';
+            document.getElementById('quoteAuthor').textContent = '——' + result.enchantment.name;
+        }
+        
+        // 分享结果
+        function shareResult() {
+            const result = calculateResult();
+            const text = `我在卡塞尔学院入学测试中被评定为${result.bloodline}级混血种，觉醒言灵「${result.enchantment.name}」！\n\n快来测试你的血统：https://silver1182.github.io/dontdie-ai/dragon-test.html`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '卡塞尔学院入学测试',
+                    text: text
+                });
+            } else {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('结果已复制到剪贴板！');
+                });
+            }
+        }
+        
+        // 重新开始
+        function restartQuiz() {
+            document.getElementById('resultPage').style.display = 'none';
+            document.getElementById('startPage').style.display = 'block';
+            currentQuestion = 0;
+            Object.keys(scores).forEach(key => scores[key] = 0);
+        }
+        
+        // 初始化
+        initParticles();
+    </script>
+</body>
+</html>
