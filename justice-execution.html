@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正义执行 - 网络喷子惩罚模拟器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 2px solid rgba(231, 76, 60, 0.5);
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(231, 76, 60, 0.5);
+        }
+        
+        .header p {
+            color: #a0a0a0;
+            margin-top: 10px;
+        }
+        
+        .game-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            min-height: 400px;
+        }
+        
+        .scene {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .scene.active {
+            display: block;
+        }
+        
+        .enemy-status {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(192, 57, 43, 0.2));
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+        
+        .enemy-avatar {
+            font-size: 4rem;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .enemy-name {
+            text-align: center;
+            color: #e74c3c;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        
+        .health-bar {
+            width: 100%;
+            height: 25px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 15px;
+            border: 2px solid #e74c3c;
+        }
+        
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .health-text {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: #e74c3c;
+        }
+        
+        .dialogue {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .dialogue-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #fff;
+        }
+        
+        .dialogue-text .enemy-speech {
+            color: #e74c3c;
+            font-style: italic;
+        }
+        
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .choice-btn {
+            padding: 18px 25px;
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(192, 57, 43, 0.2));
+            border: 2px solid rgba(231, 76, 60, 0.5);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+        }
+        
+        .choice-btn:hover {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.4), rgba(192, 57, 43, 0.4));
+            transform: translateX(10px);
+            border-color: #e74c3c;
+        }
+        
+        .damage-effect {
+            animation: shake 0.5s ease;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .end-scene {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .end-title {
+            font-size: 2.5rem;
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+        
+        .end-emoji {
+            font-size: 6rem;
+            margin: 30px 0;
+        }
+        
+        .end-text {
+            font-size: 1.2rem;
+            color: #a0a0a0;
+            line-height: 2;
+            margin-bottom: 30px;
+        }
+        
+        .restart-btn {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .restart-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .action-log {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .action-log-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+        }
+        
+        .action-log-item:last-child {
+            border-bottom: none;
+        }
+        
+        .damage {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .heal {
+            color: #2ecc71;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8rem; }
+            .game-box { padding: 20px; }
+            .enemy-avatar { font-size: 3rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚔️ 正义执行</h1>
+            <p>网络喷子惩罚模拟器</p>
+        </div>
+        
+        <div class="game-box">
+            <!-- 开场 -->
+            <div class="scene active" id="scene-start">
+                <div class="dialogue">
+                    <p class="dialogue-text">
+                        刚刚打完一局游戏，心情本来不错...直到你遇到了<span class="enemy-speech">「嘴强王者」</span>。<br><br>
+                        这家伙全程挂机送人头，打完还在公频狂喷队友。更要命的是，他还加你好友继续辱骂...<br><br>
+                        <span style="color: #e74c3c;">现在，他就在你面前。</span>
+                    </p>
+                </div>
+                <div class="choices">
+                    <button class="choice-btn" onclick="startGame()">
+                        🎯 开始正义执行
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 游戏场景 -->
+            <div class="scene" id="scene-game">
+                <div class="enemy-status">
+                    <div class="enemy-avatar" id="enemyAvatar">😈</div>
+                    <div class="enemy-name">嘴强王者（Lv.99 喷子）</div>
+                    <div class="health-bar">
+                        <div class="health-fill" id="healthFill" style="width: 100%;"></div>
+                    </div>
+                    <div class="health-text" id="healthText">嚣张度: 100%</div>
+                </div>
+                
+                <div class="dialogue" id="dialogueBox">
+                    <p class="dialogue-text" id="dialogueText">
+                        <span class="enemy-speech">「嘴强王者」</span>: 哈哈哈菜鸡！就你这水平还好意思打游戏？回家养猪去吧！
+                    </p>
+                </div>
+                
+                <div class="choices" id="choicesBox">
+                    <button class="choice-btn" onclick="makeChoice(1)">
+                        👊 直接一套素质三连（-20%嚣张度）
+                    </button>
+                    <button class="choice-btn" onclick="makeChoice(2)">
+                        📊 把他0-12的战绩截图发群里（-30%嚣张度）
+                    </button>
+                    <button class="choice-btn" onclick="makeChoice(3)">
+                        🎤 开麦用温柔语气问他"你在狗叫什么"（-25%嚣张度）
+                    </button>
+                </div>
+                
+                <div class="action-log" id="actionLog"></div>
+            </div>
+            
+            <!-- 结局1：彻底击溃 -->
+            <div class="scene" id="scene-end1">
+                <div class="end-scene">
+                    <div class="end-title">💀 彻底击溃</div>
+                    <div class="end-emoji">🤡</div>
+                    <div class="end-text">
+                        经过你的"教育"，<span style="color: #e74c3c;">「嘴强王者」</span>终于崩溃了。<br>
+                        他开始痛哭流涕，疯狂道歉：<br>
+                        <br>
+                        <span style="color: #e74c3c;">"大哥我错了！我不该喷人！"</span><br>
+                        <span style="color: #e74c3c;">"我家里穷，只能玩游戏找存在感..."</span><br>
+                        <span style="color: #e74c3c;">"求求你别挂我！我再也不敢了！😭"</span>
+                        <br><br>
+                        最后他灰溜溜地删游戏跑路了。<br>
+                        <span style="color: #2ecc71;">正义得到了伸张！</span>
+                    </div>
+                    <button class="restart-btn" onclick="restartGame()">
+                        🔄 再来一次
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 结局2：精神胜利 -->
+            <div class="scene" id="scene-end2">
+                <div class="end-scene">
+                    <div class="end-title">🎭 精神胜利</div>
+                    <div class="end-emoji">🤪</div>
+                    <div class="end-text">
+                        你决定用最狠的招式——<span style="color: #e74c3c;">无视</span>。<br>
+                        <br>
+                        不管「嘴强王者」怎么喷，你都不回复，只发一个<span style="color: #e74c3c;">😊</span>。<br>
+                        他越喷越急，越急越喷...<br>
+                        最后气得自己退了游戏。<br>
+                        <br>
+                        <span style="color: #e74c3c;">「嘴强王者」</span>: <br>
+                        "你怎么不说话？心虚了是吧！"<br>
+                        "有本事回我啊！"<br>
+                        "我*你*了个*的！"<br>
+                        <br>
+                        <span style="color: #2ecc71;">最高级的复仇，是让对方独自抓狂。</span>
+                    </div>
+                    <button class="restart-btn" onclick="restartGame()">
+                        🔄 再来一次
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 结局3：以德服人 -->
+            <div class="scene" id="scene-end3">
+                <div class="end-scene">
+                    <div class="end-title">✨ 以德服人</div>
+                    <div class="end-emoji">🥺</div>
+                    <div class="end-text">
+                        你没有选择对喷，而是私聊他问：<br>
+                        <span style="color: #3498db;">"兄弟，你是不是遇到什么不顺心的事了？"</span>
+                        <br><br>
+                        沉默了很久，他回复：<br>
+                        <span style="color: #e74c3c;">"...对不起，我刚失业，心情很差。"😢</span>
+                        <br><br>
+                        最后你们居然成了朋友，<br>
+                        他还拉你双排上分。<br>
+                        <br>
+                        <span style="color: #2ecc71;">有时候，理解比报复更有力量。</span>
+                    </div>
+                    <button class="restart-btn" onclick="restartGame()">
+                        🔄 再来一次
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let enemyHealth = 100;
+        let currentStage = 1;
+        let actionHistory = [];
+        
+        const stages = [
+            {
+                dialogue: `<span class="enemy-speech">「嘴强王者」</span>: 哈哈哈菜鸡！就你这水平还好意思打游戏？回家养猪去吧！`,
+                choices: [
+                    { text: '👊 直接一套素质三连（-20%嚣张度）', damage: 20, response: '你: 你在狗叫什么？你配吗？0-12的战绩还好意思说话？' },
+                    { text: '📊 把他0-12的战绩截图发群里（-30%嚣张度）', damage: 30, response: '你把他的战绩截图发到游戏群，瞬间99+回复全是「哈哈哈」。' },
+                    { text: '🎤 开麦用温柔语气问他"你在狗叫什么"（-25%嚣张度）', damage: 25, response: '你用极其温柔的语气说:"这位先生，请问您在狗叫什么呢？"效果拔群！' }
+                ]
+            },
+            {
+                dialogue: `<span class="enemy-speech">「嘴强王者」</span>: 你...你别嚣张！有种单挑啊！我让你一只手！`,
+                choices: [
+                    { text: '🎯 接受单挑，虐到他怀疑人生（-25%嚣张度）', damage: 25, response: '你接受了单挑，10-0结束战斗。他现在安静如鸡。' },
+                    { text: '📱 录屏发B站标题《人类迷惑行为大赏》（-35%嚣张度）', damage: 35, response: '视频一发，播放量10w+，他被弹幕大军冲烂了。' },
+                    { text: '💅 说"你太菜了，不配和我打"然后退出（-20%嚣张度）', damage: 20, response: '你轻飘飘的一句话，让他气得砸键盘。' }
+                ]
+            },
+            {
+                dialogue: `<span class="enemy-speech">「嘴强王者」</span>: 对不起...我错了...我不该喷人的...`,
+                choices: [
+                    { text: '🔥 继续追击，直到他彻底崩溃（结局：彻底击溃）', type: 'end1', response: '你: 现在知道错了？晚了！' },
+                    { text: '😊 只回一个微笑表情，然后屏蔽（结局：精神胜利）', type: 'end2', response: '你发了个😊，然后屏蔽了他。他在那边疯狂输出，你这边岁月静好。' },
+                    { text: '💬 私聊问他"你是不是遇到什么事了"（结局：以德服人）', type: 'end3', response: '你的关心让他破防了...' }
+                ]
+            }
+        ];
+        
+        function startGame() {
+            document.getElementById('scene-start').classList.remove('active');
+            document.getElementById('scene-game').classList.add('active');
+            updateStage();
+        }
+        
+        function updateStage() {
+            const stage = stages[currentStage - 1];
+            document.getElementById('dialogueText').innerHTML = stage.dialogue;
+            
+            const choicesBox = document.getElementById('choicesBox');
+            choicesBox.innerHTML = '';
+            
+            stage.choices.forEach((choice, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.textContent = choice.text;
+                btn.onclick = () => makeChoice(index + 1);
+                choicesBox.appendChild(btn);
+            });
+            
+            // 更新嚣张度显示
+            document.getElementById('healthFill').style.width = enemyHealth + '%';
+            document.getElementById('healthText').textContent = '嚣张度: ' + enemyHealth + '%';
+            
+            // 更新表情
+            const avatar = document.getElementById('enemyAvatar');
+            if (enemyHealth > 70) avatar.textContent = '😈';
+            else if (enemyHealth > 40) avatar.textContent = '😤';
+            else if (enemyHealth > 20) avatar.textContent = '😰';
+            else avatar.textContent = '🤡';
+        }
+        
+        function makeChoice(choiceIndex) {
+            const stage = stages[currentStage - 1];
+            const choice = stage.choices[choiceIndex - 1];
+            
+            // 记录行动
+            actionHistory.push(choice.response);
+            updateActionLog();
+            
+            // 检查是否是结局
+            if (choice.type) {
+                setTimeout(() => {
+                    document.getElementById('scene-game').classList.remove('active');
+                    document.getElementById('scene-' + choice.type).classList.add('active');
+                }, 1000);
+                return;
+            }
+            
+            // 扣除嚣张度
+            enemyHealth -= choice.damage;
+            if (enemyHealth < 0) enemyHealth = 0;
+            
+            // 震动效果
+            document.querySelector('.enemy-status').classList.add('damage-effect');
+            setTimeout(() => {
+                document.querySelector('.enemy-status').classList.remove('damage-effect');
+            }, 500);
+            
+            // 进入下一阶段
+            currentStage++;
+            if (currentStage > stages.length) currentStage = stages.length;
+            
+            setTimeout(() => {
+                updateStage();
+            }, 800);
+        }
+        
+        function updateActionLog() {
+            const log = document.getElementById('actionLog');
+            log.innerHTML = actionHistory.map(item => 
+                `<div class="action-log-item">${item}</div>`
+            ).join('');
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function restartGame() {
+            enemyHealth = 100;
+            currentStage = 1;
+            actionHistory = [];
+            
+            document.querySelectorAll('.scene').forEach(scene => {
+                scene.classList.remove('active');
+            });
+            document.getElementById('scene-start').classList.add('active');
+            
+            document.getElementById('actionLog').innerHTML = '';
+            updateStage();
+        }
+    </script>
+</body>
+</html>
