@@ -367,6 +367,91 @@
             opacity: 1;
         }
         
+        /* 输入姓名页面 */
+        .name-page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .name-card {
+            background: rgba(22, 33, 62, 0.9);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        
+        .name-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .name-card h2 {
+            font-size: 1.8rem;
+            color: #fd79a8;
+            margin-bottom: 0.5rem;
+        }
+        
+        .name-desc {
+            color: #a0a0a0;
+            margin-bottom: 2rem;
+        }
+        
+        .name-input-group {
+            margin-bottom: 2rem;
+        }
+        
+        .name-input-group label {
+            display: block;
+            color: #6c5ce7;
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .name-input-group input {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background: rgba(108, 92, 231, 0.1);
+            border: 2px solid rgba(108, 92, 231, 0.3);
+            border-radius: 12px;
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-family: inherit;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .name-input-group input:focus {
+            outline: none;
+            border-color: #fd79a8;
+            box-shadow: 0 0 20px rgba(253, 121, 168, 0.3);
+        }
+        
+        .name-input-group input::placeholder {
+            color: #636e72;
+        }
+        
+        .name-hint {
+            color: #636e72;
+            font-size: 0.8rem;
+            margin-top: 0.75rem;
+        }
+        
+        /* 结果显示 - 学员姓名 */
+        .student-name {
+            margin-top: 0.75rem;
+            font-size: 1.1rem;
+            color: #a0a0a0;
+        }
+        
+        .student-name::before {
+            content: '学员：';
+            color: #6c5ce7;
+        }
+        
         /* 重新测试按钮 */
         .restart-section {
             text-align: center;
@@ -425,7 +510,22 @@
                 <p>记住，在龙族的世界里，勇气、牺牲和孤独感是评判一个混血种最重要的标准。</p>
                 <p style="color: #fd79a8; margin-top: 1.5rem;">⚠️ 警告：本测试仅限混血种参与，普通人类请勿尝试</p>
             </div>
-            <button class="btn" onclick="startQuiz()">开始测试</button>
+            <button class="btn" onclick="goToNameInput()">开始测试</button>
+        </div>
+        
+        <!-- 输入姓名页面 -->
+        <div class="name-page" id="namePage" style="display: none;">
+            <div class="name-card">
+                <div class="name-icon">📝</div>
+                <h2>录入档案</h2>
+                <p class="name-desc">卡塞尔学院将为你生成专属入学档案</p>
+                <div class="name-input-group">
+                    <label for="studentName">请输入你的名字（或代号）</label>
+                    <input type="text" id="studentName" placeholder="例如：李嘉图·M·路" maxlength="20">
+                    <p class="name-hint">* 这将显示在你的入学通知书上</p>
+                </div>
+                <button class="btn" onclick="confirmName()">确认，开始测试</button>
+            </div>
         </div>
         
         <!-- 测试页面 -->
@@ -451,6 +551,7 @@
                 <div class="result-section">
                     <div class="result-label">血统等级</div>
                     <div class="bloodline" id="bloodlineResult">S级</div>
+                    <div class="student-name" id="studentNameResult">李嘉图·M·路</div>
                 </div>
                 
                 <div class="result-section">
@@ -625,6 +726,7 @@
         ];
         
         let currentQuestion = 0;
+        let studentName = '';
         let scores = {
             bravery: 0, sacrifice: 0, wisdom: 0, teamwork: 0, trust: 0,
             cunning: 0, survival: 0, loneliness: 0, empathy: 0, attachment: 0,
@@ -649,18 +751,46 @@
             }
         }
         
-        // 开始测试
-        function startQuiz() {
-            var startPage = document.getElementById('startPage');
-            var quizPage = document.getElementById('quizPage');
-            if (startPage) startPage.style.display = 'none';
-            if (quizPage) quizPage.style.display = 'block';
+        // 跳转到输入姓名页面
+        function goToNameInput() {
+            document.getElementById('startPage').style.display = 'none';
+            document.getElementById('namePage').style.display = 'block';
+            // 自动聚焦输入框
+            setTimeout(() => {
+                document.getElementById('studentName').focus();
+            }, 100);
+        }
+        
+        // 确认姓名，开始测试
+        function confirmName() {
+            const nameInput = document.getElementById('studentName');
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                alert('请输入你的名字，混血种不能没有代号！');
+                nameInput.focus();
+                return;
+            }
+            
+            if (name.length > 20) {
+                alert('名字太长了，控制在20个字符以内~');
+                return;
+            }
+            
+            studentName = name;
+            document.getElementById('namePage').style.display = 'none';
+            document.getElementById('quizPage').style.display = 'block';
             currentQuestion = 0;
             // 重置分数
             for (var key in scores) {
                 scores[key] = 0;
             }
             showQuestion();
+        }
+        
+        // 开始测试（旧函数，保留兼容性）
+        function startQuiz() {
+            goToNameInput();
         }
         
         // 显示问题
@@ -807,6 +937,9 @@
                 bloodlineEl.style.background = 'linear-gradient(135deg, #636e72, #b2bec3)';
             }
             
+            // 设置学员姓名
+            document.getElementById('studentNameResult').textContent = studentName || '匿名学员';
+            
             // 设置言灵
             document.getElementById('enchantmentName').textContent = result.enchantment.name;
             document.getElementById('enchantmentNumber').textContent = '序列号 ' + result.enchantment.number;
@@ -829,6 +962,8 @@
             document.getElementById('resultPage').style.display = 'none';
             document.getElementById('startPage').style.display = 'block';
             currentQuestion = 0;
+            studentName = '';
+            document.getElementById('studentName').value = '';
             for (var key in scores) {
                 scores[key] = 0;
             }
