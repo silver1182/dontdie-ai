@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOSS清算者 - 抢怪仇人惩罚系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+        
+        .screen {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        /* 开始界面 */
+        .start-screen {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        
+        .start-screen h1 {
+            font-size: 3rem;
+            background: linear-gradient(135deg, #e74c3c, #f39c12);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(231, 76, 60, 0.5);
+        }
+        
+        .start-screen .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 40px;
+        }
+        
+        .input-group {
+            background: linear-gradient(135deg, #1a1a1a, #0d0d0d);
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            margin: 0 auto 30px;
+        }
+        
+        .input-group label {
+            display: block;
+            color: #e74c3c;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid #444;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1.2rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #e74c3c;
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
+        }
+        
+        .input-group input::placeholder {
+            color: #555;
+        }
+        
+        .crime-list {
+            text-align: left;
+            margin-top: 20px;
+        }
+        
+        .crime-list h3 {
+            color: #e74c3c;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+        
+        .crime-item {
+            padding: 10px 15px;
+            margin: 8px 0;
+            background: rgba(231, 76, 60, 0.1);
+            border-left: 3px solid #e74c3c;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            color: #ccc;
+        }
+        
+        .btn {
+            padding: 18px 50px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 5px 20px rgba(231, 76, 60, 0.4);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(231, 76, 60, 0.6);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        /* 战斗界面 */
+        .battle-screen {
+            position: relative;
+        }
+        
+        .battle-header {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(180deg, rgba(231, 76, 60, 0.2), transparent);
+            border-bottom: 2px solid #e74c3c;
+            margin-bottom: 20px;
+        }
+        
+        .battle-header h2 {
+            color: #e74c3c;
+            font-size: 1.5rem;
+        }
+        
+        .enemy-area {
+            text-align: center;
+            padding: 30px 20px;
+            position: relative;
+            min-height: 250px;
+        }
+        
+        .boss-icon {
+            font-size: 10rem;
+            display: inline-block;
+            filter: drop-shadow(0 0 30px rgba(231, 76, 60, 0.6));
+            transition: all 0.1s;
+            cursor: pointer;
+        }
+        
+        .boss-icon.hit {
+            animation: bossHit 0.2s ease;
+        }
+        
+        @keyframes bossHit {
+            0% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+            25% { transform: scale(0.85) rotate(-15deg) translateX(-20px); filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(5); }
+            50% { transform: scale(1.1) rotate(15deg) translateX(20px); filter: brightness(1.5); }
+            75% { transform: scale(0.9) rotate(-5deg); filter: brightness(1.2); }
+            100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+        }
+        
+        .boss-icon.critical {
+            animation: bossCrit 0.4s ease;
+        }
+        
+        @keyframes bossCrit {
+            0% { transform: scale(1); }
+            20% { transform: scale(0.7) rotate(-30deg); }
+            40% { transform: scale(1.3) rotate(20deg); }
+            60% { transform: scale(0.8) rotate(-10deg); }
+            80% { transform: scale(1.1) rotate(5deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+        
+        .enemy-name-display {
+            font-size: 2rem;
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 15px;
+            text-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+        }
+        
+        .enemy-title {
+            color: #666;
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+        
+        /* 血条 */
+        .hp-section {
+            max-width: 450px;
+            margin: 20px auto;
+        }
+        
+        .hp-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #e74c3c;
+        }
+        
+        .hp-bar-container {
+            height: 35px;
+            background: #1a1a1a;
+            border: 3px solid #333;
+            border-radius: 18px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .hp-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #e74c3c 0%, #c0392b 50%, #e74c3c 100%);
+            background-size: 200% 100%;
+            animation: hpPulse 1s linear infinite;
+            transition: width 0.2s ease;
+            border-radius: 15px;
+            position: relative;
+        }
+        
+        @keyframes hpPulse {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        .hp-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.4), transparent);
+        }
+        
+        /* 伤害数字 */
+        .damage-popup {
+            position: absolute;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 100;
+            animation: damageUp 1s ease forwards;
+        }
+        
+        .damage-normal {
+            font-size: 2.5rem;
+            color: #fff;
+            text-shadow: 
+                0 0 10px #e74c3c,
+                0 0 20px #e74c3c,
+                0 0 30px #e74c3c;
+        }
+        
+        .damage-crit {
+            font-size: 4rem;
+            color: #ffd700;
+            text-shadow: 
+                0 0 10px #ff6600,
+                0 0 20px #ff6600,
+                0 0 40px #ff0000;
+        }
+        
+        @keyframes damageUp {
+            0% {
+                transform: translateY(0) scale(0.5);
+                opacity: 0;
+            }
+            20% {
+                transform: translateY(-30px) scale(1.3);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-120px) scale(1);
+                opacity: 0;
+            }
+        }
+        
+        /* 连击 */
+        .combo-display {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            text-align: right;
+            pointer-events: none;
+        }
+        
+        .combo-count {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 
+                0 0 10px #ff6600,
+                0 0 20px #ff0000;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.2s;
+        }
+        
+        .combo-count.show {
+            opacity: 1;
+            transform: scale(1);
+            animation: comboBounce 0.3s ease;
+        }
+        
+        @keyframes comboBounce {
+            0% { transform: scale(0.5); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .combo-text {
+            font-size: 1.2rem;
+            color: #e74c3c;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .combo-text.show {
+            opacity: 1;
+        }
+        
+        /* 攻击区 */
+        .attack-zone {
+            padding: 20px;
+        }
+        
+        .attack-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .attack-btn {
+            padding: 20px 15px;
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.15), rgba(192, 57, 43, 0.15));
+            border: 2px solid rgba(231, 76, 60, 0.4);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .attack-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.3s;
+        }
+        
+        .attack-btn:hover::before {
+            left: 100%;
+        }
+        
+        .attack-btn:hover {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.3), rgba(192, 57, 43, 0.3));
+            border-color: #e74c3c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(231, 76, 60, 0.3);
+        }
+        
+        .attack-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        .attack-btn .icon {
+            font-size: 1.5rem;
+            margin-right: 8px;
+        }
+        
+        .attack-btn .damage {
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            background: #e74c3c;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        /* 大招按钮 */
+        .ultimate-btn {
+            grid-column: span 2;
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.3), rgba(142, 68, 173, 0.3)) !important;
+            border-color: #9b59b6 !important;
+            font-size: 1.2rem !important;
+            padding: 25px !important;
+        }
+        
+        .ultimate-btn:hover {
+            background: linear-gradient(135deg, rgba(155, 89, 182, 0.5), rgba(142, 68, 173, 0.5)) !important;
+            box-shadow: 0 5px 25px rgba(155, 89, 182, 0.5) !important;
+        }
+        
+        /* 特效层 */
+        .effect-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+        
+        .screen-flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(231, 76, 60, 0.3);
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+        
+        .screen-flash.active {
+            opacity: 1;
+        }
+        
+        .shake {
+            animation: screenShake 0.4s ease;
+        }
+        
+        @keyframes screenShake {
+            0%, 100% { transform: translate(0, 0) rotate(0); }
+            10% { transform: translate(-15px, -5px) rotate(-2deg); }
+            20% { transform: translate(15px, 5px) rotate(2deg); }
+            30% { transform: translate(-15px, 5px) rotate(-1deg); }
+            40% { transform: translate(15px, -5px) rotate(1deg); }
+            50% { transform: translate(-10px, 10px) rotate(-1deg); }
+            60% { transform: translate(10px, -10px) rotate(1deg); }
+            70% { transform: translate(-5px, 5px) rotate(0); }
+            80% { transform: translate(5px, -5px) rotate(0); }
+            90% { transform: translate(-2px, 2px) rotate(0); }
+        }
+        
+        /* 结束画面 */
+        .end-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .end-title {
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, #e74c3c, #f39c12);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+        
+        .end-boss {
+            font-size: 8rem;
+            margin: 30px 0;
+            filter: grayscale(1) brightness(0.5);
+            animation: defeated 2s ease infinite;
+        }
+        
+        @keyframes defeated {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+        
+        .end-message {
+            font-size: 1.3rem;
+            color: #ccc;
+            line-height: 2;
+            margin-bottom: 30px;
+        }
+        
+        .stats-box {
+            background: rgba(231, 76, 60, 0.1);
+            border: 2px solid rgba(231, 76, 60, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            max-width: 400px;
+            margin: 0 auto 30px;
+        }
+        
+        .stats-box h3 {
+            color: #e74c3c;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 1.1rem;
+        }
+        
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-value {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 600px) {
+            .start-screen h1 { font-size: 2rem; }
+            .boss-icon { font-size: 7rem; }
+            .enemy-name-display { font-size: 1.5rem; }
+            .combo-count { font-size: 3rem; }
+            .attack-grid { grid-template-columns: 1fr; }
+            .ultimate-btn { grid-column: span 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="effect-layer" id="effectLayer">
+        <div class="screen-flash" id="screenFlash"></div>
+    </div>
+    
+    <div class="container">
+        <!-- 开始界面 -->
+        <div class="screen active" id="startScreen">
+            <div class="start-screen">
+                <h1>👊 BOSS清算者</h1>
+                <p class="subtitle">抢怪仇人惩罚系统</p>
+                
+                <div class="input-group">
+                    <label>📝 输入抢你BOSS的仇人名字</label>
+                    <input type="text" id="enemyNameInput" placeholder="例如：霸服狂魔丶龙傲天" maxlength="15">
+                    
+                    <div class="crime-list">
+                        <h3>📋 罪行清单（系统将自动清算）</h3>
+                        <div class="crime-item">⚔️ 恶意抢夺世界BOSS归属权</div>
+                        <div class="crime-item">😈 击杀后私信嘲讽羞辱</div>
+                        <div class="crime-item">🚫 带人封锁BOSS刷新点</div>
+                        <div class="crime-item">💬 世界频道散播谣言抹黑</div>
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="startBattle()">
+                    ⚡ 开始清算
+                </button>
+            </div>
+        </div>
+        
+        <!-- 战斗界面 -->
+        <div class="screen" id="battleScreen">
+            <div class="battle-screen">
+                <div class="battle-header">
+                    <h2>🔥 清算进行中</h2>
+                </div>
+                
+                <div class="enemy-area">
+                    <div class="boss-icon" id="bossIcon">😈</div>
+                    <div class="enemy-name-display" id="enemyNameDisplay">霸服狂魔</div>
+                    <div class="enemy-title">Lv.99 抢怪惯犯 · 全服公敌</div>
+                    
+                    <div class="hp-section">
+                        <div class="hp-label">
+                            <span>嚣张值</span>
+                            <span id="hpText">100/100</span>
+                        </div>
+                        <div class="hp-bar-container">
+                            <div class="hp-bar" id="hpBar" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="combo-display">
+                    <div class="combo-count" id="comboCount">0</div>
+                    <div class="combo-text" id="comboText">连击!</div>
+                </div>
+                
+                <div class="attack-zone">
+                    <div class="attack-grid">
+                        <button class="attack-btn" onclick="hit(1)">
+                            <span class="icon">👊</span>
+                            王八拳伺候
+                            <span class="damage">-12</span>
+                        </button>
+                        
+                        <button class="attack-btn" onclick="hit(2)">
+                            <span class="icon">🦶</span>
+                            一脚踹飞
+                            <span class="damage">-18</span>
+                        </button>
+                        
+                        <button class="attack-btn" onclick="hit(3)">
+                            <span class="icon">📢</span>
+                            世界频道曝光
+                            <span class="damage">-25</span>
+                        </button>
+                        
+                        <button class="attack-btn" onclick="hit(4)">
+                            <span class="icon">⚔️</span>
+                            守尸蹲点到下线
+                            <span class="damage">-30</span>
+                        </button>
+                        
+                        <button class="attack-btn ultimate-btn" onclick="ultimate()">
+                            <span class="icon">☠️</span>
+                            终极奥义：删号重练警告
+                            <span class="damage">-50</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 结束界面 -->
+        <div class="screen" id="endScreen">
+            <div class="end-screen">
+                <div class="end-title">💀 清算完成</div>
+                
+                <div class="end-boss">😵</div>
+                
+                <div class="end-message" id="endMessage"></div>
+                
+                <div class="stats-box">
+                    <h3>📊 清算报告</h3>
+                    
+                    <div class="stat-row">
+                        <span>总伤害</span>
+                        <span class="stat-value" id="statTotal">0</span>
+                    </div>
+                    
+                    <div class="stat-row">
+                        <span>连击峰值</span>
+                        <span class="stat-value" id="statCombo">0</span>
+                    </div>
+                    
+                    <div class="stat-row">
+                        <span>暴击次数</span>
+                        <span class="stat-value" id="statCrit">0</span>
+                    </div>
+                    
+                    <div class="stat-row">
+                        <span>攻击次数</span>
+                        <span class="stat-value" id="statHits">0</span>
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="restart()">
+                    🔄 清算下一个仇人
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let enemyName = '';
+        let hp = 100;
+        let combo = 0;
+        let maxCombo = 0;
+        let totalDamage = 0;
+        let hitCount = 0;
+        let critCount = 0;
+        let lastHitTime = 0;
+        let comboTimer = null;
+        
+        const damages = {
+            1: { base: 12, name: '王八拳' },
+            2: { base: 18, name: '飞踢' },
+            3: { base: 25, name: '曝光' },
+            4: { base: 30, name: '守尸' }
+        };
+        
+        function startBattle() {
+            const input = document.getElementById('enemyNameInput');
+            enemyName = input.value.trim() || '抢怪狗';
+            
+            document.getElementById('enemyNameDisplay').textContent = enemyName;
+            document.getElementById('startScreen').classList.remove('active');
+            document.getElementById('battleScreen').classList.add('active');
+        }
+        
+        function hit(type) {
+            const now = Date.now();
+            const info = damages[type];
+            let damage = info.base;
+            let isCrit = false;
+            
+            // 连击系统
+            if (now - lastHitTime < 1500) {
+                combo++;
+                if (combo > maxCombo) maxCombo = combo;
+                
+                // 连击加成
+                const bonus = Math.min(combo * 0.15, 0.5);
+                damage = Math.floor(damage * (1 + bonus));
+                
+                showCombo();
+            } else {
+                combo = 1;
+                hideCombo();
+            }
+            
+            lastHitTime = now;
+            
+            // 暴击判定 (20%基础 + 连击加成)
+            const critChance = 0.2 + Math.min(combo * 0.05, 0.3);
+            if (Math.random() < critChance) {
+                damage = Math.floor(damage * 1.8);
+                isCrit = true;
+                critCount++;
+            }
+            
+            // 应用伤害
+            hp = Math.max(0, hp - damage);
+            totalDamage += damage;
+            hitCount++;
+            
+            // 更新显示
+            updateHP();
+            showDamage(damage, isCrit);
+            
+            // 特效
+            flashScreen();
+            shakeScreen();
+            animateBoss(isCrit);
+            
+            // 检查结束
+            if (hp <= 0) {
+                setTimeout(endGame, 600);
+            }
+            
+            // 重置连击计时
+            clearTimeout(comboTimer);
+            comboTimer = setTimeout(() => {
+                combo = 0;
+                hideCombo();
+            }, 2000);
+        }
+        
+        function ultimate() {
+            let damage = 50;
+            
+            // 连击加成
+            if (combo > 0) {
+                damage = Math.floor(damage * (1 + combo * 0.2));
+            }
+            
+            // 必暴击
+            damage = Math.floor(damage * 2);
+            critCount++;
+            
+            combo++;
+            if (combo > maxCombo) maxCombo = combo;
+            showCombo();
+            
+            hp = Math.max(0, hp - damage);
+            totalDamage += damage;
+            hitCount++;
+            
+            updateHP();
+            showDamage(damage, true, true);
+            
+            // 超级特效
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    flashScreen();
+                    shakeScreen();
+                }, i * 100);
+            }
+            
+            animateBoss(true, true);
+            
+            if (hp <= 0) {
+                setTimeout(endGame, 800);
+            }
+        }
+        
+        function updateHP() {
+            document.getElementById('hpBar').style.width = hp + '%';
+            document.getElementById('hpText').textContent = hp + '/100';
+            
+            // 改变BOSS表情
+            const boss = document.getElementById('bossIcon');
+            if (hp > 70) boss.textContent = '😈';
+            else if (hp > 50) boss.textContent = '😤';
+            else if (hp > 30) boss.textContent = '😰';
+            else if (hp > 10) boss.textContent = '😭';
+            else boss.textContent = '😵';
+        }
+        
+        function showDamage(damage, isCrit, isUltimate = false) {
+            const popup = document.createElement('div');
+            popup.className = 'damage-popup ' + (isCrit ? 'damage-crit' : 'damage-normal');
+            popup.textContent = isCrit ? '暴击! ' + damage : '-' + damage;
+            
+            const area = document.querySelector('.enemy-area');
+            const rect = area.getBoundingClientRect();
+            
+            // 随机位置
+            const x = rect.width / 2 + (Math.random() - 0.5) * 150;
+            const y = 80 + Math.random() * 50;
+            
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+            
+            area.appendChild(popup);
+            
+            setTimeout(() => popup.remove(), 1000);
+        }
+        
+        function showCombo() {
+            if (combo >= 2) {
+                const count = document.getElementById('comboCount');
+                const text = document.getElementById('comboText');
+                
+                count.textContent = combo;
+                count.classList.add('show');
+                text.classList.add('show');
+                
+                // 根据连击数改变颜色
+                if (combo >= 10) {
+                    count.style.color = '#ff00ff';
+                    count.style.textShadow = '0 0 20px #ff00ff, 0 0 40px #ff00ff';
+                    text.textContent = '究极连击!!';
+                } else if (combo >= 5) {
+                    count.style.color = '#ff6600';
+                    text.textContent = '超神连击!';
+                } else {
+                    count.style.color = '#ffd700';
+                    text.textContent = '连击!';
+                }
+            }
+        }
+        
+        function hideCombo() {
+            document.getElementById('comboCount').classList.remove('show');
+            document.getElementById('comboText').classList.remove('show');
+        }
+        
+        function flashScreen() {
+            const flash = document.getElementById('screenFlash');
+            flash.classList.add('active');
+            setTimeout(() => flash.classList.remove('active'), 100);
+        }
+        
+        function shakeScreen() {
+            document.body.classList.add('shake');
+            setTimeout(() => document.body.classList.remove('shake'), 400);
+        }
+        
+        function animateBoss(isCrit, isUltimate = false) {
+            const boss = document.getElementById('bossIcon');
+            
+            if (isUltimate) {
+                boss.classList.add('critical');
+                setTimeout(() => boss.classList.remove('critical'), 400);
+            } else if (isCrit) {
+                boss.classList.add('critical');
+                setTimeout(() => boss.classList.remove('critical'), 300);
+            } else {
+                boss.classList.add('hit');
+                setTimeout(() => boss.classList.remove('hit'), 200);
+            }
+        }
+        
+        function endGame() {
+            document.getElementById('battleScreen').classList.remove('active');
+            document.getElementById('endScreen').classList.add('active');
+            
+            // 设置结束语
+            const messages = [
+                `${enemyName} 已经被你打到删号退游，世界BOSS终于清净了。`,
+                `经过你的"教育"，${enemyName} 再也不敢抢BOSS了，见到你就绕着走。`,
+                `${enemyName} 正在世界频道疯狂道歉，全服都在围观这个笑话。`,
+                `恭喜你，${enemyName} 已经被你打出心理阴影，改玩单机游戏了。`
+            ];
+            document.getElementById('endMessage').textContent = 
+                messages[Math.floor(Math.random() * messages.length)];
+            
+            // 统计
+            document.getElementById('statTotal').textContent = totalDamage;
+            document.getElementById('statCombo').textContent = maxCombo;
+            document.getElementById('statCrit').textContent = critCount;
+            document.getElementById('statHits').textContent = hitCount;
+        }
+        
+        function restart() {
+            hp = 100;
+            combo = 0;
+            maxCombo = 0;
+            totalDamage = 0;
+            hitCount = 0;
+            critCount = 0;
+            lastHitTime = 0;
+            
+            document.getElementById('enemyNameInput').value = '';
+            document.getElementById('bossIcon').textContent = '😈';
+            
+            updateHP();
+            hideCombo();
+            
+            document.getElementById('endScreen').classList.remove('active');
+            document.getElementById('startScreen').classList.add('active');
+        }
+        
+        // 回车键开始
+        document.getElementById('enemyNameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') startBattle();
+        });
+    </script>
+</body>
+</html>
