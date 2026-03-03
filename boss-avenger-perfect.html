@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BOSS清算者 - 完美版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(180deg, #0d0d0d 0%, #1a1a1a 100%);
+            color: #fff;
+        }
+        
+        /* 页面容器 */
+        .page {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+        }
+        
+        .page.active {
+            display: flex;
+        }
+        
+        /* ========== 首页 ========== */
+        .home-page {
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .home-title {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: bold;
+            background: linear-gradient(135deg, #e74c3c, #f39c12);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .home-subtitle {
+            color: #888;
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            margin-bottom: 50px;
+            text-align: center;
+        }
+        
+        .name-box {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 30px;
+        }
+        
+        .name-box label {
+            display: block;
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .name-box input {
+            width: 100%;
+            padding: 18px 25px;
+            background: rgba(231, 76, 60, 0.08);
+            border: 2px solid rgba(231, 76, 60, 0.3);
+            border-radius: 30px;
+            color: #fff;
+            font-size: 1.1rem;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .name-box input:focus {
+            border-color: #e74c3c;
+            box-shadow: 0 0 25px rgba(231, 76, 60, 0.25);
+        }
+        
+        .start-btn {
+            padding: 18px 60px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 5px 20px rgba(231, 76, 60, 0.4);
+        }
+        
+        .start-btn:active {
+            transform: scale(0.96);
+            box-shadow: 0 2px 10px rgba(231, 76, 60, 0.3);
+        }
+        
+        /* ========== 战斗页 ========== */
+        .battle-page {
+            position: relative;
+        }
+        
+        /* 顶部区域 - 敌人 */
+        .enemy-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .enemy-avatar {
+            font-size: clamp(6rem, 20vw, 10rem);
+            filter: drop-shadow(0 0 30px rgba(231, 76, 60, 0.5));
+            transition: transform 0.1s;
+            cursor: pointer;
+        }
+        
+        .enemy-avatar.shake {
+            animation: enemyShake 0.3s ease;
+        }
+        
+        @keyframes enemyShake {
+            0%, 100% { transform: scale(1) rotate(0); }
+            25% { transform: scale(0.9) rotate(-10deg); }
+            50% { transform: scale(1.05) rotate(10deg); }
+            75% { transform: scale(0.95) rotate(-5deg); }
+        }
+        
+        .enemy-name {
+            font-size: clamp(1.3rem, 4vw, 1.8rem);
+            color: #e74c3c;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .enemy-hp-bar {
+            width: min(80%, 350px);
+            margin-top: 15px;
+        }
+        
+        .hp-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #e74c3c;
+            margin-bottom: 5px;
+        }
+        
+        .hp-track {
+            height: 22px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 11px;
+            overflow: hidden;
+        }
+        
+        .hp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e74c3c, #ff6b6b);
+            border-radius: 11px;
+            transition: width 0.2s ease;
+        }
+        
+        /* 连击显示 */
+        .combo-box {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            text-align: right;
+            pointer-events: none;
+        }
+        
+        .combo-num {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.2s;
+        }
+        
+        .combo-num.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .combo-label {
+            font-size: 0.8rem;
+            color: #f39c12;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .combo-label.show {
+            opacity: 1;
+        }
+        
+        /* 控制按钮 - 浮动 */
+        .float-controls {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .control-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.6);
+            border: 2px solid rgba(255,255,255,0.2);
+            color: #fff;
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .control-btn:active {
+            transform: scale(0.9);
+        }
+        
+        .control-btn.active {
+            background: #e74c3c;
+            border-color: #e74c3c;
+            box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
+        }
+        
+        /* 中部 - VS 分隔 */
+        .vs-divider {
+            text-align: center;
+            padding: 10px;
+            font-size: 1.5rem;
+            color: #f39c12;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(243, 156, 18, 0.5);
+        }
+        
+        /* 底部区域 - 玩家 */
+        .player-section {
+            padding: 15px 20px 20px;
+            background: rgba(0,0,0,0.3);
+        }
+        
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .player-avatar {
+            font-size: 2.5rem;
+            filter: drop-shadow(0 0 10px rgba(52, 152, 219, 0.5));
+        }
+        
+        .player-hp {
+            flex: 1;
+        }
+        
+        .player-hp .hp-text {
+            color: #3498db;
+        }
+        
+        .player-hp .hp-fill {
+            background: linear-gradient(90deg, #3498db, #5dade2);
+        }
+        
+        /* 攻击按钮 */
+        .attack-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .atk-btn {
+            padding: 14px 10px;
+            background: rgba(231, 76, 60, 0.15);
+            border: 1.5px solid rgba(231, 76, 60, 0.4);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+        }
+        
+        .atk-btn:active {
+            transform: scale(0.96);
+            background: rgba(231, 76, 60, 0.3);
+        }
+        
+        .atk-btn .dmg {
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            background: #e74c3c;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .atk-btn.ult {
+            background: rgba(155, 89, 182, 0.2);
+            border-color: #9b59b6;
+            grid-column: span 2;
+            font-weight: bold;
+        }
+        
+        .atk-btn.ult:active {
+            background: rgba(155, 89, 182, 0.4);
+        }
+        
+        /* 特效层 */
+        .effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        .flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(231, 76, 60, 0.3);
+            opacity: 0;
+            transition: opacity 0.1s;
+        }
+        
+        .flash.show {
+            opacity: 1;
+        }
+        
+        .damage-num {
+            position: absolute;
+            font-weight: bold;
+            font-size: 2rem;
+            color: #e74c3c;
+            text-shadow: 0 0 10px #e74c3c;
+            animation: floatUp 0.8s ease forwards;
+        }
+        
+        .damage-num.crit {
+            font-size: 2.8rem;
+            color: #ffd700;
+            text-shadow: 0 0 15px #ff6600;
+        }
+        
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.8); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1); opacity: 0; }
+        }
+        
+        .taunt-bubble {
+            position: fixed;
+            top: 40%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            padding: 15px 30px;
+            border-radius: 20px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            z-index: 200;
+            animation: popIn 0.3s ease;
+            box-shadow: 0 5px 30px rgba(243, 156, 18, 0.4);
+        }
+        
+        @keyframes popIn {
+            0% { transform: translateX(-50%) scale(0); }
+            50% { transform: translateX(-50%) scale(1.1); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+        
+        /* 弹窗 */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 500;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-overlay.show {
+            display: flex;
+        }
+        
+        .modal {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 25px;
+            width: 100%;
+            max-width: 450px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal h3 {
+            color: #e74c3c;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .skill-row {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+        
+        .skill-row h4 {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        
+        .skill-row input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(0,0,0,0.4);
+            border: 1px solid #444;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        
+        .modal-close {
+            width: 100%;
+            padding: 15px;
+            margin-top: 10px;
+            background: #e74c3c;
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        
+        /* 结束页 */
+        .end-page {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .end-title {
+            font-size: 2.5rem;
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+        
+        .end-emoji {
+            font-size: 6rem;
+            margin: 20px 0;
+            filter: grayscale(1);
+        }
+        
+        .end-text {
+            color: #aaa;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 特效层 -->
+    <div class="effects" id="effects">
+        <div class="flash" id="flash"></div>
+    </div>
+    
+    <!-- 首页 -->
+    <div class="page active" id="homePage">
+        <div class="home-title">BOSS清算者</div>
+        <div class="home-subtitle">抢怪仇人惩罚系统</div>
+        
+        <div class="name-box">
+            <label>输入抢你BOSS的仇人名字</label>
+            <input type="text" id="enemyInput" placeholder="例如：霸服狂魔" maxlength="12">
+        </div>
+        
+        <button class="start-btn" onclick="startGame()">开始清算</button>
+    </div>
+    
+    <!-- 战斗页 -->
+    <div class="page" id="battlePage">
+        <!-- 控制按钮 -->
+        <div class="float-controls">
+            <button class="control-btn" id="btnInfinite" onclick="toggleInfinite()" title="无限血条">♾️</button>
+            <button class="control-btn" id="btnGod" onclick="toggleGod()" title="无敌模式">🛡️</button>
+            <button class="control-btn" onclick="openSkillModal()" title="技能设置">⚙️</button>
+        </div>
+        
+        <!-- 连击 -->
+        <div class="combo-box">
+            <div class="combo-num" id="comboNum">0</div>
+            <div class="combo-label" id="comboLabel">连击</div>
+        </div>
+        
+        <!-- 敌人 -->
+        <div class="enemy-section">
+            <div class="enemy-avatar" id="enemyAvatar">😈</div>
+            <div class="enemy-name" id="enemyNameDisplay">抢怪狗</div>
+            
+            <div class="enemy-hp-bar">
+                <div class="hp-text">
+                    <span>嚣张值</span>
+                    <span id="enemyHpText">100/100</span>
+                </div>
+                <div class="hp-track">
+                    <div class="hp-fill" id="enemyHpFill" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- VS -->
+        <div class="vs-divider">VS</div>
+        
+        <!-- 玩家 -->
+        <div class="player-section">
+            <div class="player-info">
+                <div class="player-avatar">😎</div>
+                
+                <div class="player-hp">
+                    <div class="hp-text">
+                        <span>你的血量</span>
+                        <span id="playerHpText">100/100</span>
+                    </div>
+                    <div class="hp-track">
+                        <div class="hp-fill" id="playerHpFill" style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="attack-grid" id="attackGrid"></div>
+        </div>
+    </div>
+    
+    <!-- 结束页 -->
+    <div class="page" id="endPage">
+        <div class="end-title">清算完成</div>
+        <div class="end-emoji">🤡</div>
+        <div class="end-text" id="endMsg"></div>
+        <button class="start-btn" onclick="restart()">再来一局</button>
+    </div>
+    
+    <!-- 技能弹窗 -->
+    <div class="modal-overlay" id="skillModal">
+        <div class="modal">
+            <h3>⚙️ 自定义技能</h3>
+            <div id="skillList"></div>
+            <button class="modal-close" onclick="saveSkills()">保存</button>
+        </div>
+    </div>
+    
+    <script>
+        // 技能
+        let skills = [
+            { name: '王八拳', dmg: 15, icon: '👊' },
+            { name: '夺命飞踢', dmg: 22, icon: '🦶' },
+            { name: '世界曝光', dmg: 30, icon: '📢' },
+            { name: '终极审判', dmg: 50, icon: '⚡', ult: true }
+        ];
+        
+        // 状态
+        let enemyName = '';
+        let enemyHp = 100;
+        let playerHp = 100;
+        let combo = 0;
+        let infinite = false;
+        let godMode = false;
+        let gameOver = false;
+        let lastAtk = 0;
+        
+        const taunts = ['就这？','你在挠痒痒吗？','太弱了！','BOSS是我的！','根本不疼！'];
+        
+        function startGame() {
+            enemyName = document.getElementById('enemyInput').value.trim() || '抢怪狗';
+            document.getElementById('enemyNameDisplay').textContent = enemyName;
+            
+            enemyHp = 100;
+            playerHp = 100;
+            combo = 0;
+            gameOver = false;
+            
+            updateDisplay();
+            renderButtons();
+            
+            document.getElementById('homePage').classList.remove('active');
+            document.getElementById('battlePage').classList.add('active');
+        }
+        
+        function renderButtons() {
+            const grid = document.getElementById('attackGrid');
+            grid.innerHTML = '';
+            
+            skills.forEach((s, i) => {
+                const btn = document.createElement('button');
+                btn.className = s.ult ? 'atk-btn ult' : 'atk-btn';
+                btn.innerHTML = s.ult ? 
+                    `${s.icon} ${s.name}` : 
+                    `${s.icon} ${s.name}<span class="dmg">-${s.dmg}</span>`;
+                btn.onclick = () => doAttack(i);
+                grid.appendChild(btn);
+            });
+        }
+        
+        function doAttack(idx) {
+            if (gameOver) return;
+            
+            const s = skills[idx];
+            const now = Date.now();
+            let dmg = s.dmg;
+            
+            // 连击
+            if (now - lastAtk < 1500) {
+                combo++;
+                dmg = Math.floor(dmg * (1 + combo * 0.1));
+                showCombo();
+            } else {
+                combo = 1;
+            }
+            lastAtk = now;
+            
+            // 暴击 25%
+            const crit = Math.random() < 0.25;
+            if (crit) dmg = Math.floor(dmg * 1.8);
+            
+            // 无限模式
+            if (infinite) enemyHp = 100;
+            else enemyHp = Math.max(0, enemyHp - dmg);
+            
+            // 特效
+            showDamage(dmg, crit);
+            flash();
+            shake();
+            document.getElementById('enemyAvatar').classList.add('shake');
+            setTimeout(() => document.getElementById('enemyAvatar').classList.remove('shake'), 300);
+            
+            updateDisplay();
+            
+            // 嘲讽
+            if (Math.random() < 0.4) showTaunt(taunts[Math.floor(Math.random() * taunts.length)]);
+            
+            // 结束检查
+            if (!infinite && enemyHp <= 0) {
+                setTimeout(endGame, 500);
+                return;
+            }
+            
+            // 敌人反击
+            if (Math.random() < 0.35) {
+                setTimeout(counterAttack, 400);
+            }
+            
+            // 重置连击
+            clearTimeout(window.comboTimer);
+            window.comboTimer = setTimeout(() => { combo = 0; hideCombo(); }, 2000);
+        }
+        
+        function counterAttack() {
+            if (gameOver) return;
+            
+            let dmg = Math.floor(Math.random() * 6) + 3;
+            
+            if (godMode) {
+                dmg = 0;
+                showTaunt('🛡️ 无敌！');
+            }
+            
+            playerHp = Math.max(0, playerHp - dmg);
+            updateDisplay();
+            
+            if (playerHp <= 0 && !godMode) {
+                setTimeout(() => endGame(false), 500);
+            }
+        }
+        
+        function showCombo() {
+            document.getElementById('comboNum').textContent = combo;
+            document.getElementById('comboNum').classList.add('show');
+            document.getElementById('comboLabel').classList.add('show');
+        }
+        
+        function hideCombo() {
+            document.getElementById('comboNum').classList.remove('show');
+            document.getElementById('comboLabel').classList.remove('show');
+        }
+        
+        function showDamage(dmg, crit) {
+            const el = document.createElement('div');
+            el.className = crit ? 'damage-num crit' : 'damage-num';
+            el.textContent = crit ? `暴击! ${dmg}` : `-${dmg}`;
+            el.style.left = (window.innerWidth/2 - 50 + Math.random()*100) + 'px';
+            el.style.top = '35%';
+            document.getElementById('effects').appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+        
+        function showTaunt(text) {
+            const el = document.createElement('div');
+            el.className = 'taunt-bubble';
+            el.textContent = text;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1200);
+        }
+        
+        function flash() {
+            const f = document.getElementById('flash');
+            f.classList.add('show');
+            setTimeout(() => f.classList.remove('show'), 100);
+        }
+        
+        function shake() {
+            document.body.style.animation = 'none';
+            document.body.offsetHeight;
+            document.body.style.animation = 'shake 0.4s ease';
+        }
+        
+        function updateDisplay() {
+            document.getElementById('enemyHpFill').style.width = (enemyHp/100*100) + '%';
+            document.getElementById('enemyHpText').textContent = `${enemyHp}/100`;
+            document.getElementById('playerHpFill').style.width = (playerHp/100*100) + '%';
+            document.getElementById('playerHpText').textContent = `${playerHp}/100`;
+            
+            // 表情
+            const av = document.getElementById('enemyAvatar');
+            if (enemyHp > 70) av.textContent = '😈';
+            else if (enemyHp > 40) av.textContent = '😤';
+            else if (enemyHp > 0) av.textContent = '😰';
+            else av.textContent = '🤡';
+        }
+        
+        function toggleInfinite() {
+            infinite = !infinite;
+            document.getElementById('btnInfinite').classList.toggle('active', infinite);
+            showTaunt(infinite ? '♾️ 无限模式开启' : '♾️ 无限模式关闭');
+        }
+        
+        function toggleGod() {
+            godMode = !godMode;
+            document.getElementById('btnGod').classList.toggle('active', godMode);
+            showTaunt(godMode ? '🛡️ 无敌模式开启' : '🛡️ 无敌模式关闭');
+        }
+        
+        function openSkillModal() {
+            const list = document.getElementById('skillList');
+            list.innerHTML = '';
+            skills.forEach((s, i) => {
+                list.innerHTML += `
+                    <div class="skill-row">
+                        <h4>技能${i+1}</h4>
+                        <input type="text" id="sk${i}name" value="${s.name}" placeholder="名称">
+                        <input type="number" id="sk${i}dmg" value="${s.dmg}" placeholder="伤害">
+                        <input type="text" id="sk${i}icon" value="${s.icon}" placeholder="图标">
+                    </div>
+                `;
+            });
+            document.getElementById('skillModal').classList.add('show');
+        }
+        
+        function saveSkills() {
+            skills.forEach((s, i) => {
+                s.name = document.getElementById(`sk${i}name`).value || s.name;
+                s.dmg = parseInt(document.getElementById(`sk${i}dmg`).value) || s.dmg;
+                s.icon = document.getElementById(`sk${i}icon`).value || s.icon;
+            });
+            renderButtons();
+            document.getElementById('skillModal').classList.remove('show');
+            showTaunt('⚙️ 技能已保存');
+        }
+        
+        function endGame(win = true) {
+            gameOver = true;
+            document.getElementById('battlePage').classList.remove('active');
+            document.getElementById('endPage').classList.add('active');
+            
+            const msgs = win ? [
+                `${enemyName} 已经被你打到删号退游！`,
+                `经过你的"教育"，${enemyName} 再也不敢抢BOSS了！`,
+                `${enemyName} 正在世界频道疯狂道歉！`
+            ] : [
+                `没想到 ${enemyName} 这么顽强...`,
+                `虽然你倒下了，但精神永不灭！`
+            ];
+            document.getElementById('endMsg').textContent = msgs[Math.floor(Math.random() * msgs.length)];
+        }
+        
+        function restart() {
+            enemyHp = 100;
+            playerHp = 100;
+            combo = 0;
+            infinite = false;
+            godMode = false;
+            gameOver = false;
+            document.getElementById('btnInfinite').classList.remove('active');
+            document.getElementById('btnGod').classList.remove('active');
+            document.getElementById('endPage').classList.remove('active');
+            document.getElementById('homePage').classList.add('active');
+        }
+        
+        // 键盘事件
+        document.getElementById('enemyInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') startGame();
+        });
+        
+        // 添加震动动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translate(0, 0); }
+                20% { transform: translate(-10px, 5px); }
+                40% { transform: translate(10px, -5px); }
+                60% { transform: translate(-10px, -5px); }
+                80% { transform: translate(10px, 5px); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
