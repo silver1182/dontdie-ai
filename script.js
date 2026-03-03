@@ -329,9 +329,14 @@ function initPageData() {
         renderSkills(data);
         renderAbout(data);
     }
-    // 初始化留言板，首次访问添加示例留言
-    initGuestbook();
-    renderGuestbook();
+    // 初始化留言板（使用 API 版本，如果可用）
+    if (typeof initGuestbookAPI === 'function') {
+        initGuestbookAPI();
+    } else {
+        // 降级到本地存储版本
+        initGuestbook();
+        renderGuestbook();
+    }
 }
 
 // 初始化留言板（首次访问添加示例）
