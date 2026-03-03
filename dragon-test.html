@@ -629,6 +629,7 @@
         // 初始化粒子背景
         function initParticles() {
             const container = document.getElementById('particles');
+            if (!container) return;
             for (let i = 0; i < 50; i++) {
                 const particle = document.createElement('div');
                 particle.className = 'particle';
@@ -641,11 +642,15 @@
         
         // 开始测试
         function startQuiz() {
-            document.getElementById('startPage').style.display = 'none';
-            document.getElementById('quizPage').style.display = 'block';
+            var startPage = document.getElementById('startPage');
+            var quizPage = document.getElementById('quizPage');
+            if (startPage) startPage.style.display = 'none';
+            if (quizPage) quizPage.style.display = 'block';
             currentQuestion = 0;
-            scores = { ...scores };
-            Object.keys(scores).forEach(key => scores[key] = 0);
+            // 重置分数
+            for (var key in scores) {
+                scores[key] = 0;
+            }
             showQuestion();
         }
         
