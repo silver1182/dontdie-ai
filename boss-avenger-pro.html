@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOSS清算者Pro - 自定义对战系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #0a0a0a;
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        
+        .screen {
+            display: none;
+        }
+        
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 设置界面 */
+        .setup-screen {
+            padding: 20px;
+        }
+        
+        .setup-screen h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #e74c3c, #f39c12);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+        
+        .setup-section {
+            background: linear-gradient(135deg, #1a1a1a, #0d0d0d);
+            border: 2px solid #333;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .setup-section h3 {
+            color: #e74c3c;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            color: #888;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .input-group input[type="text"],
+        .input-group input[type="number"] {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid #444;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #e74c3c;
+        }
+        
+        /* 开关 */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+        }
+        
+        .toggle-row:last-child {
+            border-bottom: none;
+        }
+        
+        .toggle-label {
+            color: #ccc;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: #333;
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .toggle-switch.active {
+            background: #e74c3c;
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+        
+        .toggle-switch.active::after {
+            transform: translateX(24px);
+        }
+        
+        /* 技能编辑器 */
+        .skill-editor {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .skill-editor h4 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+        
+        .skill-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .skill-inputs input {
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: #fff;
+        }
+        
+        .btn {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border: none;
+            border-radius: 25px;
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: block;
+            margin: 30px auto;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(231, 76, 60, 0.4);
+        }
+        
+        .btn-small {
+            padding: 8px 20px;
+            font-size: 0.9rem;
+            margin: 10px 0;
+        }
+        
+        /* 战斗界面 */
+        .battle-screen {
+            padding: 10px;
+        }
+        
+        .battle-arena {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            position: relative;
+        }
+        
+        .fighter {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .fighter-avatar {
+            font-size: 6rem;
+            display: inline-block;
+            transition: all 0.2s;
+            filter: drop-shadow(0 0 20px rgba(255,255,255,0.2));
+        }
+        
+        .fighter-avatar.hit {
+            animation: fighterHit 0.3s ease;
+        }
+        
+        @keyframes fighterHit {
+            0% { transform: scale(1) rotate(0); }
+            25% { transform: scale(0.8) rotate(-10deg); filter: brightness(2) sepia(1) hue-rotate(-50deg); }
+            50% { transform: scale(1.1) rotate(10deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+        
+        .fighter-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .fighter-name.player {
+            color: #3498db;
+        }
+        
+        .fighter-name.enemy {
+            color: #e74c3c;
+        }
+        
+        .hp-bar-container {
+            width: 140px;
+            margin: 10px auto;
+        }
+        
+        .hp-bar-bg {
+            height: 20px;
+            background: #1a1a1a;
+            border: 2px solid #444;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .hp-bar {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.2s ease;
+        }
+        
+        .hp-bar.player {
+            background: linear-gradient(90deg, #3498db, #2980b9);
+        }
+        
+        .hp-bar.enemy {
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+        }
+        
+        .hp-text {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            color: #888;
+        }
+        
+        .vs-badge {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #f39c12;
+            text-shadow: 0 0 20px rgba(243, 156, 18, 0.5);
+        }
+        
+        /* 战斗日志 */
+        .battle-log {
+            background: rgba(0,0,0,0.5);
+            border-radius: 10px;
+            padding: 15px;
+            height: 120px;
+            overflow-y: auto;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        
+        .log-item {
+            padding: 5px 0;
+            border-bottom: 1px solid #222;
+        }
+        
+        .log-item:last-child {
+            border-bottom: none;
+        }
+        
+        .log-item.player {
+            color: #3498db;
+        }
+        
+        .log-item.enemy {
+            color: #e74c3c;
+        }
+        
+        .log-item.taunt {
+            color: #f39c12;
+            font-style: italic;
+        }
+        
+        /* 技能按钮 */
+        .skills-panel {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .skill-btn {
+            padding: 15px 10px;
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(192, 57, 43, 0.2));
+            border: 2px solid rgba(231, 76, 60, 0.5);
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.1s;
+            position: relative;
+        }
+        
+        .skill-btn:hover {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.4), rgba(192, 57, 43, 0.4));
+            transform: translateY(-2px);
+        }
+        
+        .skill-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .skill-btn .skill-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .skill-btn .skill-damage {
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            background: #e74c3c;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+        
+        /* 伤害飘字 */
+        .damage-float {
+            position: absolute;
+            font-weight: bold;
+            font-size: 2rem;
+            pointer-events: none;
+            animation: floatUp 1s ease forwards;
+            z-index: 100;
+        }
+        
+        .damage-float.player {
+            color: #3498db;
+            text-shadow: 0 0 10px #3498db;
+        }
+        
+        .damage-float.enemy {
+            color: #e74c3c;
+            text-shadow: 0 0 10px #e74c3c;
+        }
+        
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            20% { transform: translateY(-30px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-80px) scale(1); opacity: 0; }
+        }
+        
+        /* 嘲讽弹窗 */
+        .taunt-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, rgba(243, 156, 18, 0.9), rgba(230, 126, 34, 0.9));
+            padding: 20px 30px;
+            border-radius: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-align: center;
+            z-index: 1000;
+            animation: tauntPop 0.5s ease;
+            box-shadow: 0 0 30px rgba(243, 156, 18, 0.5);
+        }
+        
+        @keyframes tauntPop {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            50% { transform: translate(-50%, -50%) scale(1.2); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        /* 结束界面 */
+        .end-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .end-title {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .end-title.win {
+            color: #2ecc71;
+        }
+        
+        .end-title.lose {
+            color: #e74c3c;
+        }
+        
+        @media (max-width: 600px) {
+            .battle-arena {
+                flex-direction: column;
+                gap: 20px;
+            }
+            .vs-badge {
+                order: -1;
+            }
+            .fighter-avatar {
+                font-size: 4rem;
+            }
+            .skills-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 设置界面 -->
+    <div class="screen active" id="setupScreen">
+        <div class="setup-screen">
+            <h1>⚔️ BOSS清算者Pro</h1>
+            
+            <div class="setup-section">
+                <h3>👤 对手设置</h3>
+                
+                <div class="input-group">
+                    <label>仇人名字</label>
+                    <input type="text" id="enemyName" placeholder="例如：霸服狂魔" value="抢怪狗">
+                </div>
+                
+                <div class="input-group">
+                    <label>仇人血量 (设置100为正常，或自定义)</label>
+                    <input type="number" id="enemyMaxHP" placeholder="100" value="100" min="1">
+                </div>
+                
+                <div class="toggle-row">
+                    <span class="toggle-label">🔥 无限血条模式（爽打不停）</span>
+                    <div class="toggle-switch" id="infiniteHP" onclick="toggleSwitch(this)"></div>
+                </div>
+                
+                <div class="toggle-row">
+                    <span class="toggle-label">🛡️ 启用反击系统（对面会还手）</span>
+                    <div class="toggle-switch active" id="counterAttack" onclick="toggleSwitch(this)"></div>
+                </div>
+            </div>
+            
+            <div class="setup-section">
+                <h3>🎮 自定义技能库</h3>
+                
+                <div id="customSkills">
+                    <div class="skill-editor">
+                        <h4>技能1</h4>
+                        <div class="skill-inputs">
+                            <input type="text" class="skill-name" placeholder="技能名称" value="王八拳">
+                            <input type="number" class="skill-dmg" placeholder="伤害" value="15">
+                            <input type="text" class="skill-icon" placeholder="图标emoji" value="👊">
+                            <input type="text" class="skill-desc" placeholder="描述" value="朴实无华的一拳">
+                        </div>
+                    </div>
+                    
+                    <div class="skill-editor">
+                        <h4>技能2</h4>
+                        <div class="skill-inputs">
+                            <input type="text" class="skill-name" placeholder="技能名称" value="夺命飞踢">
+                            <input type="number" class="skill-dmg" placeholder="伤害" value="25">
+                            <input type="text" class="skill-icon" placeholder="图标emoji" value="🦶">
+                            <input type="text" class="skill-desc" placeholder="描述" value="一脚踹出BOSS区">
+                        </div>
+                    </div>
+                    
+                    <div class="skill-editor">
+                        <h4>技能3</h4>
+                        <div class="skill-inputs">
+                            <input type="text" class="skill-name" placeholder="技能名称" value="世界曝光">
+                            <input type="number" class="skill-dmg" placeholder="伤害" value="35">
+                            <input type="text" class="skill-icon" placeholder="图标emoji" value="📢">
+                            <input type="text" class="skill-desc" placeholder="描述" value="让全服知道他的恶行">
+                        </div>
+                    </div>
+                    
+                    <div class="skill-editor">
+                        <h4>技能4</h4>
+                        <div class="skill-inputs">
+                            <input type="text" class="skill-name" placeholder="技能名称" value="终极审判">
+                            <input type="number" class="skill-dmg" placeholder="伤害" value="50">
+                            <input type="text" class="skill-icon" placeholder="图标emoji" value="⚡">
+                            <input type="text" class="skill-desc" placeholder="描述" value="必杀技">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn" onclick="startGame()">开始清算</button>
+        </div>
+    </div>
+    
+    <!-- 战斗界面 -->
+    <div class="screen" id="battleScreen">
+        <div class="battle-screen">
+            <div class="battle-arena">
+                <div class="fighter">
+                    <div class="fighter-avatar" id="playerAvatar">😎</div>
+                    <div class="fighter-name player">你</div>
+                    <div class="hp-bar-container">
+                        <div class="hp-bar-bg">
+                            <div class="hp-bar player" id="playerHP" style="width: 100%"></div>
+                        </div>
+                        <div class="hp-text" id="playerHPText">100/100</div>
+                    </div>
+                </div>
+                
+                <div class="vs-badge">VS</div>
+                
+                <div class="fighter">
+                    <div class="fighter-avatar" id="enemyAvatar">😈</div>
+                    <div class="fighter-name enemy" id="enemyNameDisplay">抢怪狗</div>
+                    <div class="hp-bar-container">
+                        <div class="hp-bar-bg">
+                            <div class="hp-bar enemy" id="enemyHP" style="width: 100%"></div>
+                        </div>
+                        <div class="hp-text" id="enemyHPText">100/100</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="battle-log" id="battleLog">
+                <div class="log-item">战斗开始！</div>
+            </div>
+            
+            <div class="skills-panel" id="skillsPanel"></div>
+        </div>
+    </div>
+    
+    <!-- 结束界面 -->
+    <div class="screen" id="endScreen">
+        <div class="end-screen">
+            <div class="end-title" id="endTitle"></div>
+            <div id="endMessage"></div>
+            <button class="btn" onclick="restart()">再来一局</button>
+        </div>
+    </div>
+    
+    <script>
+        // 游戏配置
+        let config = {
+            enemyName: '',
+            enemyMaxHP: 100,
+            infiniteHP: false,
+            counterAttack: true,
+            skills: []
+        };
+        
+        // 游戏状态
+        let state = {
+            playerHP: 100,
+            playerMaxHP: 100,
+            enemyHP: 100,
+            gameOver: false
+        };
+        
+        // 嘲讽语库
+        const taunts = [
+            "就这？",
+            "你在给我挠痒痒吗？",
+            "不行啊，弟弟！",
+            "太弱了太弱了！",
+            "回去练级再来吧！",
+            "BOSS是我的，你也是我的！",
+            "笑死，根本不破防！"
+        ];
+        
+        // 反击语库
+        const counterLines = [
+            "吃我一招！",
+            "没那么容易！",
+            "看招！",
+            "反击！",
+            "别想嚣张！"
+        ];
+        
+        function toggleSwitch(el) {
+            el.classList.toggle('active');
+        }
+        
+        function getSkills() {
+            const editors = document.querySelectorAll('.skill-editor');
+            const skills = [];
+            
+            editors.forEach((editor, index) => {
+                const name = editor.querySelector('.skill-name').value || `技能${index+1}`;
+                const damage = parseInt(editor.querySelector('.skill-dmg').value) || 10;
+                const icon = editor.querySelector('.skill-icon').value || '👊';
+                const desc = editor.querySelector('.skill-desc').value || '';
+                
+                skills.push({ name, damage, icon, desc });
+            });
+            
+            return skills;
+        }
+        
+        function startGame() {
+            // 读取配置
+            config.enemyName = document.getElementById('enemyName').value || '抢怪狗';
+            config.enemyMaxHP = parseInt(document.getElementById('enemyMaxHP').value) || 100;
+            config.infiniteHP = document.getElementById('infiniteHP').classList.contains('active');
+            config.counterAttack = document.getElementById('counterAttack').classList.contains('active');
+            config.skills = getSkills();
+            
+            // 初始化状态
+            state.playerHP = 100;
+            state.playerMaxHP = 100;
+            state.enemyHP = config.enemyMaxHP;
+            state.gameOver = false;
+            
+            // 更新显示
+            document.getElementById('enemyNameDisplay').textContent = config.enemyName;
+            document.getElementById('enemyHPText').textContent = `${state.enemyHP}/${config.enemyMaxHP}`;
+            document.getElementById('playerHPText').textContent = `${state.playerHP}/${state.playerMaxHP}`;
+            
+            // 生成技能按钮
+            generateSkillButtons();
+            
+            // 清空战斗日志
+            document.getElementById('battleLog').innerHTML = '<div class="log-item">战斗开始！清算时刻到了！</div>';
+            
+            // 切换界面
+            document.getElementById('setupScreen').classList.remove('active');
+            document.getElementById('battleScreen').classList.add('active');
+        }
+        
+        function generateSkillButtons() {
+            const panel = document.getElementById('skillsPanel');
+            panel.innerHTML = '';
+            
+            config.skills.forEach((skill, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'skill-btn';
+                btn.innerHTML = `
+                    <div class="skill-name">${skill.icon} ${skill.name}</div>
+                    <div style="font-size: 0.8rem; color: #aaa;">${skill.desc}</div>
+                    <span class="skill-damage">-${skill.damage}</span>
+                `;
+                btn.onclick = () => useSkill(index);
+                panel.appendChild(btn);
+            });
+        }
+        
+        function useSkill(skillIndex) {
+            if (state.gameOver) return;
+            
+            const skill = config.skills[skillIndex];
+            
+            // 造成伤害
+            let damage = skill.damage;
+            const isCrit = Math.random() < 0.2;
+            if (isCrit) damage = Math.floor(damage * 1.5);
+            
+            // 无限血条模式
+            if (config.infiniteHP) {
+                state.enemyHP = config.enemyMaxHP; // 始终保持满血
+            } else {
+                state.enemyHP = Math.max(0, state.enemyHP - damage);
+            }
+            
+            // 显示伤害
+            showDamage(damage, 'enemy', isCrit);
+            animateFighter('enemyAvatar');
+            updateHP();
+            
+            // 战斗日志
+            addLog(`你使用 ${skill.name} 对 ${config.enemyName} 造成 ${damage} 点伤害！`, 'player');
+            
+            // 嘲讽
+            if (Math.random() < 0.5) {
+                const taunt = taunts[Math.floor(Math.random() * taunts.length)];
+                showTaunt(taunt);
+                addLog(`你嘲讽道："${taunt}"`, 'taunt');
+            }
+            
+            // 检查敌人是否倒下（非无限模式）
+            if (!config.infiniteHP && state.enemyHP <= 0) {
+                setTimeout(() => endGame(true), 500);
+                return;
+            }
+            
+            // 敌人反击
+            if (config.counterAttack && Math.random() < 0.4) {
+                setTimeout(() => enemyCounter(), 600);
+            }
+        }
+        
+        function enemyCounter() {
+            if (state.gameOver) return;
+            
+            const damage = Math.floor(Math.random() * 8) + 3; // 3-10点伤害
+            state.playerHP = Math.max(0, state.playerHP - damage);
+            
+            showDamage(damage, 'player', false);
+            animateFighter('playerAvatar');
+            updateHP();
+            
+            const line = counterLines[Math.floor(Math.random() * counterLines.length)];
+            addLog(`${config.enemyName} ${line} 对你造成 ${damage} 点伤害！`, 'enemy');
+            
+            if (state.playerHP <= 0) {
+                setTimeout(() => endGame(false), 500);
+            }
+        }
+        
+        function showDamage(damage, target, isCrit) {
+            const el = document.createElement('div');
+            el.className = `damage-float ${target}`;
+            el.textContent = isCrit ? `暴击! ${damage}` : `-${damage}`;
+            
+            const container = target === 'player' ? 
+                document.querySelector('.fighter:first-child') : 
+                document.querySelector('.fighter:last-child');
+            
+            const rect = container.getBoundingClientRect();
+            el.style.left = (rect.width / 2 - 30 + Math.random() * 60) + 'px';
+            el.style.top = '50px';
+            
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+        
+        function animateFighter(id) {
+            const el = document.getElementById(id);
+            el.classList.add('hit');
+            setTimeout(() => el.classList.remove('hit'), 300);
+        }
+        
+        function showTaunt(text) {
+            const el = document.createElement('div');
+            el.className = 'taunt-popup';
+            el.textContent = text;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1500);
+        }
+        
+        function updateHP() {
+            const enemyPercent = (state.enemyHP / config.enemyMaxHP) * 100;
+            const playerPercent = (state.playerHP / state.playerMaxHP) * 100;
+            
+            document.getElementById('enemyHP').style.width = enemyPercent + '%';
+            document.getElementById('playerHP').style.width = playerPercent + '%';
+            
+            document.getElementById('enemyHPText').textContent = `${state.enemyHP}/${config.enemyMaxHP}`;
+            document.getElementById('playerHPText').textContent = `${state.playerHP}/${state.playerMaxHP}`;
+            
+            // 表情变化
+            const enemyAvatar = document.getElementById('enemyAvatar');
+            const hpPercent = state.enemyHP / config.enemyMaxHP;
+            if (hpPercent > 0.7) enemyAvatar.textContent = '😈';
+            else if (hpPercent > 0.4) enemyAvatar.textContent = '😤';
+            else if (hpPercent > 0) enemyAvatar.textContent = '😰';
+            else enemyAvatar.textContent = '😵';
+        }
+        
+        function addLog(text, type) {
+            const log = document.getElementById('battleLog');
+            const item = document.createElement('div');
+            item.className = `log-item ${type}`;
+            item.textContent = text;
+            log.appendChild(item);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        function endGame(playerWon) {
+            state.gameOver = true;
+            
+            document.getElementById('battleScreen').classList.remove('active');
+            document.getElementById('endScreen').classList.add('active');
+            
+            const title = document.getElementById('endTitle');
+            const msg = document.getElementById('endMessage');
+            
+            if (playerWon) {
+                title.textContent = '🎉 清算成功！';
+                title.className = 'end-title win';
+                msg.innerHTML = `
+                    <p style="font-size: 1.2rem; color: #ccc; line-height: 2;">
+                        ${config.enemyName} 已经被你彻底击败！<br>
+                        他哭着求饶，承诺再也不抢BOSS了。<br>
+                        世界频道一片叫好，你成了全服英雄！
+                    </p>
+                `;
+            } else {
+                title.textContent = '💀 清算失败...';
+                title.className = 'end-title lose';
+                msg.innerHTML = `
+                    <p style="font-size: 1.2rem; color: #ccc; line-height: 2;">
+                        没想到 ${config.enemyName} 这么顽强...<br>
+                        虽然你倒下了，但精神永不灭！<br>
+                        重整旗鼓，下次再战！
+                    </p>
+                `;
+            }
+        }
+        
+        function restart() {
+            document.getElementById('endScreen').classList.remove('active');
+            document.getElementById('setupScreen').classList.add('active');
+        }
+    </script>
+</body>
+</html>
